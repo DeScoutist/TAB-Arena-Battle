@@ -46,13 +46,13 @@ public class UnitSelection : MonoBehaviour
 		// Меняем визуальное представление юнита
 		// Например, вы можете изменить цвет юнита или добавить вокруг него выделение
 		// Это зависит от вашей реализации
-		selectedUnit.GetComponent<Renderer>().material.color = Color.red;
+		selectedUnit.GetComponentInChildren<SpriteRenderer>().material.color = Color.red;
 	}
 
 	public static void DeselectUnit()
 	{
 		// Возвращаем юниту исходный цвет
-		selectedUnit.GetComponent<Renderer>().material.color = Color.white;
+		selectedUnit.GetComponentInChildren<SpriteRenderer>().material.color = Color.white;
 
 		// Снимаем выделение с юнита
 		selectedUnit = null;

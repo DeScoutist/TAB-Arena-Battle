@@ -6,7 +6,7 @@ public class PlayerAI : MonoBehaviour
 {
     protected const float WAIT_ATTACK_DURATION = 2f;
     protected const float LINE_RENDERER_WIDTH = 0.1f;
-    protected const string BOSS_TAG = "Boss";
+    protected const string BOSS_TAG = "BOSS_TAG";
     protected const string DEFAULT_SHADER = "Sprites/Default";
 
     [SerializeField]

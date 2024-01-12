@@ -13,27 +13,27 @@ public class SpawnUnit : MonoBehaviour
 	public void Spawn()
 	{
 		// Создаем новый экземпляр танка на точке спауна
-		GameObject tank = Instantiate(tankPrefab, spawnPoint.position, spawnPoint.rotation);
+		GameObject tank = Instantiate(tankPrefab, spawnPoint.position + new Vector3(1, 0, 0), spawnPoint.rotation);
 
 		// Добавляем новый юнит в UnitUIManager
-		FindObjectOfType<UnitUIManager>().AddUnit(tank.GetComponent<Unit>());
+		// FindObjectOfType<UnitUIManager>().AddUnit(tank.GetComponent<Unit>());
 
 		// Создаем новый экземпляр танка на точке спауна
-		GameObject healer = Instantiate(healerPrefab, spawnPoint.position, spawnPoint.rotation);
+		GameObject healer = Instantiate(healerPrefab, spawnPoint.position+ new Vector3(2, 0, 0), spawnPoint.rotation);
 
 		// Добавляем новый юнит в UnitUIManager
-		FindObjectOfType<UnitUIManager>().AddUnit(healer.GetComponent<Unit>());
+		// FindObjectOfType<UnitUIManager>().AddUnit(healer.GetComponent<Unit>());
 
 		// Создаем новый экземпляр танка на точке спауна
-		GameObject dps = Instantiate(dpsPrefab, spawnPoint.position, spawnPoint.rotation);
+		GameObject dps = Instantiate(dpsPrefab, spawnPoint.position+ new Vector3(3, 0, 0), spawnPoint.rotation);
 
 		// Добавляем новый юнит в UnitUIManager
-		FindObjectOfType<UnitUIManager>().AddUnit(dps.GetComponent<Unit>());
+		// FindObjectOfType<UnitUIManager>().AddUnit(dps.GetComponent<Unit>());
 
 		// Создаем новый экземпляр танка на точке спауна
-		GameObject boss = Instantiate(bossPrefab, spawnPoint.position, spawnPoint.rotation);
+		GameObject boss = Instantiate(bossPrefab, spawnPoint.position+ new Vector3(4, 0, 0), spawnPoint.rotation);
 
 		// Добавляем новый юнит в UnitUIManager
-		FindObjectOfType<UnitUIManager>().AddUnit(boss.GetComponent<Unit>());
+		// FindObjectOfType<UnitUIManager>().AddUnit(boss.GetComponent<Unit>());
 	}
 }
