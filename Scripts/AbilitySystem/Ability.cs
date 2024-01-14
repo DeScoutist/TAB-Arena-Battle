@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.VFX;
 
 namespace AbilitySystem
 {
@@ -16,9 +17,11 @@ namespace AbilitySystem
 		public float durationTime = 0; // время длительности нахождения способности
 		public float effectInterval = 0; // время длительности нахождения способности
 		public GameObject animationPrefab;
+		public VisualEffect visualEffect;
 
 		public bool canBeRotatedCasting = true;
 		public bool isVoidZone = false;
+		public bool requireCasting = true;
 
 		public List<GameObject> playersCollided = new List<GameObject>();
 

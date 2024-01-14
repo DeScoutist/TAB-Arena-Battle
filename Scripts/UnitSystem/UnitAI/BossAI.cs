@@ -65,7 +65,7 @@ public class BossAI : MonoBehaviour
     {
         Vector3 direction = closestEnemy.transform.position - this.transform.position;
         float yRotation = Quaternion.LookRotation(direction).eulerAngles.y;
-        transform.rotation = Quaternion.Euler(90, yRotation, 0);
+        transform.rotation = Quaternion.Euler(0, yRotation, 0);
     }
 
     private void InitiateAttackOnEnemy(Unit closestEnemy)

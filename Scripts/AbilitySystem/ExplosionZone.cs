@@ -12,7 +12,7 @@ namespace AbilitySystem
 		private Image explosionZoneProgress;
 		private Quaternion currentRotation;
 
-		private GameObject _colliderInstance;
+		protected GameObject colliderInstance;
 
 		public ExplosionZone(RectTransform transform, float effectDuration, float fadeDuration)
 			: base(transform, effectDuration, fadeDuration)
@@ -25,16 +25,16 @@ namespace AbilitySystem
 
 		public override void Activate(Vector3 position, Quaternion rotation)
 		{
-			_colliderInstance = Instantiate(animationPrefab, position, rotation);
+			colliderInstance = Instantiate(animationPrefab, position, rotation);
 
 			radius *= 0.1f;
-			_colliderInstance.transform.localScale = new Vector3(radius, 0, radius);
-			_colliderInstance.GetComponent<AbilityAnimationController>().StartCoroutine(FadeOutImages(appearTime));
+			colliderInstance.transform.localScale = new Vector3(radius, 0, radius);
+			colliderInstance.GetComponent<AbilityAnimationController>().StartCoroutine(FadeOutImages(appearTime));
 
-			_colliderInstance.transform.Find("Fill").GetComponent<AbilityInteractionController>().ability = this;
+			colliderInstance.transform.Find("Fill").GetComponent<AbilityInteractionController>().ability = this;
 
 			// Уничтожить объект через 5 секунд, например
-			Destroy(_colliderInstance, appearTime);
+			Destroy(colliderInstance, appearTime);
 		}
 
 		public override void PerformEffect()
@@ -45,13 +45,11 @@ namespace AbilitySystem
 			{
 				target.GetComponent<Unit>().ChangeHealth(-damageAmount);
 			}
-
-
 		}
 
 		public override IEnumerator FadeOutImages(float currentCastTime)
 		{
-			var fill = _colliderInstance.transform.Find("Fill");
+			var fill = colliderInstance.transform.Find("Fill");
 
 			for (float t = 0.0f; t < currentCastTime; t += Time.deltaTime)
 			{
