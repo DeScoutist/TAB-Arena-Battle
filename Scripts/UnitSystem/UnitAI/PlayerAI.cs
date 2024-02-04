@@ -14,18 +14,21 @@ public class PlayerAI : MonoBehaviour
 	[SerializeField] protected float attackDamage = 10f;
 	[SerializeField] protected float stopDistance = 3f;
 
-	protected GameObject target;
 	protected Coroutine attackRoutine;
 	protected bool isTaskedToRun = false;
+	protected bool isTaskedToFollow = false;
 	protected Vector3 positionToRunTo;
 	protected LineRenderer lineRenderer;
-	protected Unit targetEnemy;
+	protected Unit selectedTarget;
 	protected bool isInCombat = false;
+	protected Camera playerCamera;
+	protected Unit thisUnit;
 
 	protected virtual void Start()
 	{
-		target = GameObject.FindGameObjectWithTag(BOSS_TAG);
+		thisUnit = this.GetComponent<Unit>();
 		InitializeLineRenderer();
+		playerCamera = GameObject.FindWithTag("PLAYER_CAMERA").GetComponent<Camera>();
 	}
 
 	protected void InitializeLineRenderer()
@@ -70,6 +73,13 @@ public class PlayerAI : MonoBehaviour
 
 	protected virtual void HandlePlayerInput()
 	{
+		// Если персонаж оглушен, игнорируем ввод игрока
+		// TODO: 123
+		// if (thisUnit.DebuffSystem.HasTag(stunnedTag))
+		// {
+		// 	return;
+		// }
+		
 		if (Input.GetMouseButtonDown(1))
 		{
 			HandleRightClick();
@@ -79,16 +89,20 @@ public class PlayerAI : MonoBehaviour
 	protected virtual void HandleRightClick()
 	{
 		RaycastHit hitInfo;
-		bool isHit = Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hitInfo);
+		bool isHit = Physics.Raycast(playerCamera.ScreenPointToRay(Input.mousePosition), out hitInfo);
 		Unit hitUnit = isHit ? hitInfo.transform.GetComponent<Unit>() : null;
 
-		if (hitUnit != null)
+		if (hitUnit != null && hitUnit.isEnemy)
 		{
 			MoveOrAttack(hitInfo);
+			lineRenderer.startColor = lineRenderer.endColor = Color.red; // Измените цвет линии на красный
+
 		}
 		else
 		{
 			MoveToPoint();
+			isTaskedToFollow = false;
+			lineRenderer.startColor = lineRenderer.endColor = Color.green;
 		}
 	}
 
@@ -97,7 +111,9 @@ public class PlayerAI : MonoBehaviour
 		Unit enemy = unitHit.transform.GetComponent<Unit>();
 		if (enemy != null && enemy.isEnemy)
 		{
-			targetEnemy = enemy;
+			// Установите выбранную цель
+			isTaskedToFollow = true;
+			selectedTarget = enemy;
 			isInCombat = true;
 			if (TargetIsOutOfAttackRange())
 			{
@@ -106,12 +122,21 @@ public class PlayerAI : MonoBehaviour
 		}
 	}
 
-	protected void MoveToPoint()
+	protected virtual void MoveToPoint()
 	{
+		// Получаем текущий тег персонажа
+		// GameplayTag.Authoring.GameplayTagScriptableObject currentTag = thisUnit.GetCurrentTag();
+		//
+		// // Проверяем, является ли текущий тег одним из тегов, запрещающих движение
+		// if (currentTag == thisUnit.stunnedTag || currentTag == thisUnit.immobilizedTag || currentTag == thisUnit.astralTag)
+		// {
+		// 	// Если персонаж обладает тегом, запрещающим движение, прекращаем выполнение метода
+		// 	return;
+		// }
+
 		float distance;
-		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
 		Plane plane = new Plane(Vector3.up, transform.position);
-		targetEnemy = null;
 
 		if (plane.Raycast(ray, out distance))
 		{
@@ -129,9 +154,9 @@ public class PlayerAI : MonoBehaviour
 	{
 		if (isTaskedToRun)
 		{
-			if (targetEnemy)
+			if (selectedTarget && isTaskedToFollow)
 			{
-				positionToRunTo = targetEnemy.transform.position;
+				positionToRunTo = selectedTarget.transform.position;
 			}
 
 			transform.position = Vector3.MoveTowards(transform.position, positionToRunTo, speed * Time.deltaTime);
@@ -149,15 +174,15 @@ public class PlayerAI : MonoBehaviour
 
 	protected bool TargetIsInRange()
 	{
-		return targetEnemy != null &&
-		       Vector3.Distance(transform.position, targetEnemy.transform.position) <= attackRadius;
+		return selectedTarget != null &&
+		       Vector3.Distance(transform.position, selectedTarget.transform.position) <= attackRadius;
 	}
 
 	protected IEnumerator AttackTarget()
 	{
-		while (target != null && Vector3.Distance(transform.position, target.transform.position) <= attackRadius)
+		while (selectedTarget != null && Vector3.Distance(transform.position, selectedTarget.transform.position) <= attackRadius)
 		{
-			target.GetComponent<Unit>().ChangeHealth(-attackDamage);
+			selectedTarget.GetComponent<Unit>().ChangeHealth(-attackDamage);
 			yield return new WaitForSeconds(WAIT_ATTACK_DURATION);
 		}
 
@@ -166,12 +191,12 @@ public class PlayerAI : MonoBehaviour
 
 	protected bool TargetIsOutOfAttackRange()
 	{
-		return Vector3.Distance(transform.position, targetEnemy.transform.position) > attackRadius;
+		return Vector3.Distance(transform.position, selectedTarget.transform.position) > attackRadius;
 	}
 
 	protected void MoveAgainstTarget()
 	{
-		positionToRunTo = targetEnemy.transform.position;
+		positionToRunTo = selectedTarget.transform.position;
 		isTaskedToRun = true;
 	}
 }

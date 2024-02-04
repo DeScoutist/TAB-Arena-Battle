@@ -31,7 +31,7 @@ namespace AbilitySystem.Authoring
                         && AscHasNoneTags(Owner, this.Ability.AbilityTags.OwnerTags.IgnoreTags);
             }
 
-            protected override IEnumerator ActivateAbility()
+            public override IEnumerator ActivateAbility()
             {
                 // Apply cost and cooldown (if any)
                 if (this.Ability.Cooldown)

@@ -3,31 +3,31 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using AbilitySystem;
-using UnitSystem;
+ using AbilitySystem.Authoring;
+ using UnitSystem;
 using UnityEngine;
-using Random = UnityEngine.Random;
+ using UnityEngine.Serialization;
+ using Random = UnityEngine.Random;
 
 public class BossAI : MonoBehaviour
 {
     public float speed = 5f;
     public float attackRadius = 4f;
-    public float attackDamage = 10f;
-    // public List<Ability> abilities;
-    // private Dictionary<Ability, float> abilityLastUsedTimes = new Dictionary<Ability, float>();
-    // public AbilityController _controller;
-    private Unit target;
+    public float attackDamage = 0f;
+    private AbilityController _controller;
+    public Unit Target;
     private Unit meUnit;
     private Coroutine attackRoutine;
-    // public Ability currentAbility;
+    public AbstractAbilitySpec currentAbility;
     public float stopDistance = 3f;
+    
+    [SerializeField]
+    private AbilityController abilityController;
 
     private void Start()
     {
         meUnit = GetComponent<Unit>();
-        // foreach (var ability in abilities)
-        // {
-            // abilityLastUsedTimes[ability] = -ability.cooldown;
-        // }
+        _controller = GetComponent<AbilityController>();
     }
 
     void Update()
@@ -39,9 +39,9 @@ public class BossAI : MonoBehaviour
 
         float distance = Vector3.Distance(transform.position, closestEnemy.transform.position);
 
-        // bool canMoveAndRotate = currentAbility == null || !(currentAbility.canBeRotatedCasting && meUnit.isCasting);
+        bool canMoveAndRotate = currentAbility == null || !(currentAbility.isCasting && meUnit.isCasting);
 
-        // if (canMoveAndRotate)
+        if (canMoveAndRotate)
         {
             MoveTowardsEnemy(closestEnemy, distance);
             RotateTowardsEnemy(closestEnemy);
@@ -50,8 +50,8 @@ public class BossAI : MonoBehaviour
         if (distance <= attackRadius)
             InitiateAttackOnEnemy(closestEnemy);
 
-        // if (currentAbility == null && !meUnit.isCasting)
-            // ActivateRandomAbility();
+        if (currentAbility == null && !meUnit.isCasting)
+            ActivateRandomAbility();
     }
 
     private void MoveTowardsEnemy(Unit closestEnemy, float distance)
@@ -70,9 +70,9 @@ public class BossAI : MonoBehaviour
 
     private void InitiateAttackOnEnemy(Unit closestEnemy)
     {
-        if (target == null || target != closestEnemy || attackRoutine == null)
+        if (Target == null || Target != closestEnemy || attackRoutine == null)
         {
-            target = closestEnemy;
+            Target = closestEnemy;
 
             if (attackRoutine != null)
                 StopCoroutine(attackRoutine);
@@ -81,36 +81,25 @@ public class BossAI : MonoBehaviour
         }
     }
 
-    // private void ActivateRandomAbility()
-    // {
-    //     // Получаем список способностей, которые не на кулдауне
-    //     List<Ability> availableAbilities = abilities.Where(a =>
-    //         abilityLastUsedTimes.ContainsKey(a) &&
-    //         Time.time - abilityLastUsedTimes[a] >= a.cooldown).ToList();
-    //
-    //     if (!availableAbilities.Any())
-    //         return;
-    //
-    //     // Выбираем случайную способность из списка доступных
-    //     Ability chosenAbility = availableAbilities[UnityEngine.Random.Range(0, availableAbilities.Count)];
-    //
-    //     // Update the last used time
-    //     abilityLastUsedTimes[chosenAbility] = Time.time;
-    //
-    //     currentAbility = chosenAbility;
-    //
-    //     Vector3 direction = target.transform.position - transform.position;
-    //     Quaternion rotation = Quaternion.Euler(0, -Quaternion.LookRotation(direction).eulerAngles.y, 0);
-    //
-    //     Ability newAbility = Instantiate(currentAbility);
-    //     _controller.ActivateAbility(newAbility, transform.position, rotation);
-    //     StartCoroutine(WaitForAbilityToFinish(newAbility));
-    // }
-    //
-    // private IEnumerator WaitForAbilityToFinish(Ability ability)
-    // {
-    //     yield return new WaitForSeconds(ability.cooldown);
-    // }
+    private void ActivateRandomAbility()
+    {
+        
+        if (!_controller.abilitySpecs.Any())
+            return;
+        
+        // Получаем список способностей, которые не на кулдауне
+        var availableAbilities = _controller.abilitySpecs.Where(a => a.CheckCooldown().TimeRemaining <= 0).ToList();
+
+        if (!availableAbilities.Any())
+            return;
+
+        // Выбираем случайную способность из списка доступных
+        // AbstractAbilitySpec chosenAbility = availableAbilities[UnityEngine.Random.Range(0, availableAbilities.Count)];
+
+        // Активируем выбранную способность
+        this.abilityController.UseAbility(UnityEngine.Random.Range(0, availableAbilities.Count));
+        // StartCoroutine(chosenAbility.TryActivateAbility());
+    }
 
     private Unit FindClosestEnemy()
     {
@@ -144,9 +133,9 @@ public class BossAI : MonoBehaviour
 
     private IEnumerator AttackTarget()
     {
-        while (target != null && Vector3.Distance(transform.position, target.transform.position) <= attackRadius)
+        while (Target != null && Vector3.Distance(transform.position, Target.transform.position) <= attackRadius)
         {
-            target.ChangeHealth(-attackDamage);
+            Target.ChangeHealth(-attackDamage);
             yield return new WaitForSeconds(2f);
         }
     }

@@ -1,4 +1,5 @@
-﻿using UnitSystem;
+﻿using System.Collections.Generic;
+using UnitSystem;
 using UnityEngine;
 
 public class SpawnUnit : MonoBehaviour
@@ -8,6 +9,7 @@ public class SpawnUnit : MonoBehaviour
 	public GameObject dpsPrefab; // Префаб танка
 	public GameObject bossPrefab;
 	public Transform spawnPoint; // Точка спауна
+	public List<Unit> units = new List<Unit>(); // Список юнитов
 
 	// Метод для создания экземпляра танка
 	public void Spawn()
@@ -33,6 +35,9 @@ public class SpawnUnit : MonoBehaviour
 		// Создаем новый экземпляр танка на точке спауна
 		GameObject boss = Instantiate(bossPrefab, spawnPoint.position+ new Vector3(4, 0, 0), spawnPoint.rotation);
 
+		units.Add(tank.GetComponent<Unit>());
+		units.Add(healer.GetComponent<Unit>());
+		units.Add(dps.GetComponent<Unit>());
 		// Добавляем новый юнит в UnitUIManager
 		// FindObjectOfType<UnitUIManager>().AddUnit(boss.GetComponent<Unit>());
 	}

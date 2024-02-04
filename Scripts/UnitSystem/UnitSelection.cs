@@ -1,9 +1,16 @@
-﻿using UnitSystem;
+﻿using System;
+using UnitSystem;
 using UnityEngine;
 
 public class UnitSelection : MonoBehaviour
 {
 	public static Unit selectedUnit; // Выделенный юнит
+	private Camera playerCamera;
+
+	private void Start()
+	{
+		playerCamera = GameObject.FindWithTag("PLAYER_CAMERA").GetComponent<Camera>();
+	}
 
 	void Update()
 	{
@@ -11,7 +18,7 @@ public class UnitSelection : MonoBehaviour
 		if (Input.GetMouseButtonDown(0))
 		{
 			// Создаем луч из камеры в точку клика
-			Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+			Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
 			RaycastHit hit;
 
 			// Проверяем, попал ли луч в какой-нибудь объект

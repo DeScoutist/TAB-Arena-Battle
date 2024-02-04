@@ -15,7 +15,12 @@ namespace AbilitySystem.Authoring
         /// Tags for this ability
         /// </summary>
         [SerializeField] public AbilityTags AbilityTags;
-
+        
+        /// <summary>
+        /// Tags for this ability
+        /// </summary>
+        [SerializeField] public float CastTime = 0f;
+        
         /// <summary>
         /// The GameplayEffect that defines the cost associated with activating the ability
         /// </summary>
