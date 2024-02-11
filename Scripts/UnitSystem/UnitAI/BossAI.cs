@@ -50,6 +50,7 @@ public class BossAI : MonoBehaviour
         if (distance <= attackRadius)
             InitiateAttackOnEnemy(closestEnemy);
 
+        // TODO: Нужно добавить функциональность радиусов способностей.
         if (currentAbility == null && !meUnit.isCasting)
             ActivateRandomAbility();
     }

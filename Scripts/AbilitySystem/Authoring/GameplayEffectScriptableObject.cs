@@ -15,6 +15,9 @@ namespace AbilitySystem.Authoring
 
         [SerializeField]
         public GameplayEffectPeriod Period;
+        
+        [SerializeField]
+        public Sprite Icon; // Иконка для GameplayEffect
     }
 
 }

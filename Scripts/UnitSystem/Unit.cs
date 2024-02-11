@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using TMPro;
-using UI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,16 +16,15 @@ namespace UnitSystem
 		[SerializeField] private AttributeSystem.Authoring.AttributeScriptableObject healthAttribute; // Атрибут здоровья
 		[SerializeField] private AttributeSystem.Authoring.AttributeScriptableObject maxHealthAttribute; // Атрибут max здоровья
 		public DebuffSystem DebuffSystem { get; private set; }
-
 		
 		public float HealthPercentage
 		{
 			get
 			{
-				// if (attributeSystem.GetAttributeValue(healthAttribute, out var healthValue))
-				// {
-				// 	return (healthValue.CurrentValue / healthValue.BaseValue) * 100;
-				// }
+				if (attributeSystem.GetAttributeValue(healthAttribute, out var healthValue))
+				{
+					return (healthValue.CurrentValue / healthValue.BaseValue) * 100;
+				}
 				return 0;
 			}
 		}
@@ -35,39 +33,39 @@ namespace UnitSystem
 		public delegate void OnHealthChanged(float newHealth);
 		public event OnHealthChanged onHealthChanged;
 
+
 		private void Start()
 		{
 			// Получаем компонент AttributeSystemComponent
-			// attributeSystem = GetComponent<AttributeSystem.Components.AttributeSystemComponent>();
+			attributeSystem = GetComponent<AttributeSystem.Components.AttributeSystemComponent>();
 			// DebuffSystem = new DebuffSystem();
 		}
 
 		// Метод для изменения здоровья
 		public void ChangeHealth(float amount)
 		{
-			// if (attributeSystem.GetAttributeValue(healthAttribute, out var healthValue))
-			// {
-			// 	// Изменяем базовое значение атрибута здоровья
-			// 	float newHealth = healthValue.BaseValue + amount;
-			// 	healthValue.BaseValue = Mathf.Max(newHealth, 0);
-			// 	attributeSystem.SetAttributeBaseValue(healthAttribute, healthValue.BaseValue);
-			// 	
-			// 	if (healthValue.BaseValue <= 0)
-			// 	{
-			// 		Destroy(gameObject);
-			// 	}
-			// 	
-			// 	if (amount < 0)
-			// 	{
-			// 		ShowDamage(-amount);
-			// 	}
-			// }
+			if (attributeSystem.GetAttributeValue(healthAttribute, out var healthValue))
+			{
+				// Изменяем базовое значение атрибута здоровья
+				float newHealth = healthValue.BaseValue + amount;
+				healthValue.BaseValue = Mathf.Max(newHealth, 0);
+				attributeSystem.SetAttributeBaseValue(healthAttribute, healthValue.BaseValue);
+				
+				if (healthValue.BaseValue <= 0)
+				{
+					Destroy(gameObject);
+				}
+				
+				if (amount < 0)
+				{
+					ShowDamage(-amount);
+				}
+			}
 
-			// attributeSystem.GetAttributeValue(maxHealthAttribute, out var maxHealthValue);
+			attributeSystem.GetAttributeValue(maxHealthAttribute, out var maxHealthValue);
 			// Вызываем событие
-			// onHealthChanged?.Invoke(healthValue.BaseValue / maxHealthValue.BaseValue);
+			onHealthChanged?.Invoke(healthValue.BaseValue / maxHealthValue.BaseValue);
 		}
-		
 		
 		private void ShowDamage(float amount)
 		{

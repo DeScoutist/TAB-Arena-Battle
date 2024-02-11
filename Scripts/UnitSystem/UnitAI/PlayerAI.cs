@@ -1,4 +1,7 @@
 ﻿using System.Collections;
+using System.Linq;
+using AbilitySystem;
+using GameplayTag.Authoring;
 using UnityEngine;
 using UnitSystem;
 
@@ -17,20 +20,35 @@ public class PlayerAI : MonoBehaviour
 	protected Coroutine attackRoutine;
 	protected bool isTaskedToRun = false;
 	protected bool isTaskedToFollow = false;
+	protected bool isAttackOnCooldown = false;
 	protected Vector3 positionToRunTo;
 	protected LineRenderer lineRenderer;
 	protected Unit selectedTarget;
 	protected bool isInCombat = false;
 	protected Camera playerCamera;
 	protected Unit thisUnit;
+	protected float lastAttackTime = 0f; // Добавьте это в начало класса
+	protected AbilitySystemCharacter character; // Ссылка на AbilitySystemCharacter
+
+	protected GameplayTagScriptableObject stunTag;
+	
 
 	protected virtual void Start()
 	{
 		thisUnit = this.GetComponent<Unit>();
 		InitializeLineRenderer();
 		playerCamera = GameObject.FindWithTag("PLAYER_CAMERA").GetComponent<Camera>();
+		character = GetComponent<AbilitySystemCharacter>(); // Получаем компонент AbilitySystemCharacter
+
+		LoadTags();
 	}
 
+	protected void LoadTags()
+	{
+		// Инициализируем stunTag
+		stunTag = Resources.Load<GameplayTagScriptableObject>("Prefabs/Tags/CharacterStates/Stunned");
+	}
+	
 	protected void InitializeLineRenderer()
 	{
 		lineRenderer = gameObject.AddComponent<LineRenderer>();
@@ -45,6 +63,14 @@ public class PlayerAI : MonoBehaviour
 
 		if (IsPlayerControlled())
 		{
+			Debug.Log("123123123");
+			// Если персонаж оглушен, игнорируем ввод игрока
+			if (character.AppliedGameplayEffects.Any(effect => effect.spec.GameplayEffect.gameplayEffectTags.GrantedTags.Contains(stunTag)))
+			{
+				Debug.Log("Stunned");
+				return;
+			}
+			
 			HandlePlayerInput();
 
 			if (isTaskedToRun)
@@ -61,7 +87,7 @@ public class PlayerAI : MonoBehaviour
 		{
 			if (attackRoutine == null)
 			{
-				attackRoutine = StartCoroutine(AttackTarget());
+				attackRoutine = StartCoroutine(TryAttackTarget());
 			}
 		}
 	}
@@ -71,15 +97,14 @@ public class PlayerAI : MonoBehaviour
 		return UnitSelection.selectedUnit == this.GetComponent<Unit>();
 	}
 
+	private IEnumerator AttackCooldown(float cooldownTime)
+	{
+		yield return new WaitForSeconds(cooldownTime);
+		isAttackOnCooldown = false;
+	}
+
 	protected virtual void HandlePlayerInput()
 	{
-		// Если персонаж оглушен, игнорируем ввод игрока
-		// TODO: 123
-		// if (thisUnit.DebuffSystem.HasTag(stunnedTag))
-		// {
-		// 	return;
-		// }
-		
 		if (Input.GetMouseButtonDown(1))
 		{
 			HandleRightClick();
@@ -96,7 +121,6 @@ public class PlayerAI : MonoBehaviour
 		{
 			MoveOrAttack(hitInfo);
 			lineRenderer.startColor = lineRenderer.endColor = Color.red; // Измените цвет линии на красный
-
 		}
 		else
 		{
@@ -178,12 +202,21 @@ public class PlayerAI : MonoBehaviour
 		       Vector3.Distance(transform.position, selectedTarget.transform.position) <= attackRadius;
 	}
 
-	protected IEnumerator AttackTarget()
+	protected IEnumerator TryAttackTarget()
 	{
-		while (selectedTarget != null && Vector3.Distance(transform.position, selectedTarget.transform.position) <= attackRadius)
+		if (isAttackOnCooldown) yield return null;
+
+		while (selectedTarget != null &&
+		       Vector3.Distance(transform.position, selectedTarget.transform.position) <= attackRadius)
 		{
-			selectedTarget.GetComponent<Unit>().ChangeHealth(-attackDamage);
-			yield return new WaitForSeconds(WAIT_ATTACK_DURATION);
+			if (!isAttackOnCooldown)
+			{
+				isAttackOnCooldown = true;
+				selectedTarget.GetComponent<Unit>().ChangeHealth(-attackDamage);
+				StartCoroutine(AttackCooldown(WAIT_ATTACK_DURATION));
+			}
+
+			yield return null;
 		}
 
 		attackRoutine = null;

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Linq;
 using AbilitySystem.Abilities;
 using UnityEngine;
 
@@ -76,6 +77,29 @@ namespace AbilitySystem.Authoring
                 foreach (var player in targetedPlayers)
                 {
                     player.ApplyGameplayEffectSpecToSelf(effectSpec);
+                    
+                    
+                    // Применяем ConditionalGameplayEffects, если они есть
+                    foreach (var conditionalEffect in (this.Ability as AOEAbilityScriptableObject).GameplayEffect.gameplayEffect.ConditionalGameplayEffects)
+                    {
+                        // Проверяем, есть ли у игрока все необходимые теги
+                        bool hasAllRequiredTags = true;
+                        foreach (var requiredTag in conditionalEffect.RequiredSourceTags)
+                        {
+                            if (!player.AppliedGameplayEffects.Any(effect => effect.spec.GameplayEffect.gameplayEffectTags.GrantedTags.Contains(requiredTag)))
+                            {
+                                hasAllRequiredTags = false;
+                                break;
+                            }
+                        }
+
+                        // Если у игрока есть все необходимые теги, применяем ConditionalGameplayEffect
+                        if (hasAllRequiredTags)
+                        {
+                            var conditionalEffectSpec = this.Owner.MakeOutgoingSpec(conditionalEffect.GameplayEffect);
+                            player.ApplyGameplayEffectSpecToSelf(conditionalEffectSpec);
+                        }
+                    }
                 }
                 
                 Destroy(AoeMarker);

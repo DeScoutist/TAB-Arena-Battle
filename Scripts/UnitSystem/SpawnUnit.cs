@@ -10,6 +10,11 @@ public class SpawnUnit : MonoBehaviour
 	public GameObject bossPrefab;
 	public Transform spawnPoint; // Точка спауна
 	public List<Unit> units = new List<Unit>(); // Список юнитов
+	
+	// Определите делегат и событие
+	public delegate void BossSpawned(Unit boss);
+	public static event BossSpawned OnBossSpawned;
+
 
 	// Метод для создания экземпляра танка
 	public void Spawn()
@@ -34,6 +39,9 @@ public class SpawnUnit : MonoBehaviour
 
 		// Создаем новый экземпляр танка на точке спауна
 		GameObject boss = Instantiate(bossPrefab, spawnPoint.position+ new Vector3(4, 0, 0), spawnPoint.rotation);
+
+		// Вызываем событие
+		OnBossSpawned?.Invoke(boss.GetComponent<Unit>());
 
 		units.Add(tank.GetComponent<Unit>());
 		units.Add(healer.GetComponent<Unit>());
