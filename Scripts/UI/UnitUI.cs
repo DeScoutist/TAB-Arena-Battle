@@ -52,6 +52,7 @@ public class UnitUI : MonoBehaviour
 		
 		// Показываем индикатор каста и устанавливаем текст
 		CastBar.gameObject.SetActive(true);
+		CastBar.color = new Color(CastBar.color.r, CastBar.color.g, CastBar.color.b, 1);
 	}
 
 	public void Update()
@@ -74,11 +75,14 @@ public class UnitUI : MonoBehaviour
 	private IEnumerator CastAbility()
 	{
 		isCasting = false;
-		Debug.Log("Cast Ability");
 		yield return currentAbility.ActivateAbility();
 		currentAbility.EndAbility();
 
-		StartCoroutine(FadeOutCastBar());
+		// Проверяем, все ли еще идет каст перед началом затухания
+		if (!isCasting)
+		{
+			StartCoroutine(FadeOutCastBar());
+		}
 	}
 
 	private IEnumerator FadeOutCastBar()
@@ -97,6 +101,7 @@ public class UnitUI : MonoBehaviour
 	public void CancelCasting()
 	{
 		isCasting = false;
+		currentAbility.EndAbility();
 		currentAbility = null;
 
 		// Скрываем индикатор при отмене каста

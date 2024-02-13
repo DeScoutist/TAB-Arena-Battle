@@ -19,5 +19,4 @@ namespace AbilitySystem.Authoring
         [SerializeField]
         public Sprite Icon; // Иконка для GameplayEffect
     }
-
 }

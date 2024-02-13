@@ -3,6 +3,7 @@ using AbilitySystem.Authoring;
 using AttributeSystem.Authoring;
 using AttributeSystem.Components;
 using GameplayTag.Authoring;
+using UnitSystem;
 using UnityEngine;
 
 
@@ -32,13 +33,13 @@ namespace AbilitySystem
 
 		public void DebugPrintGrantedTags()
 		{
-			foreach (var gameplayEffect in AppliedGameplayEffects)
-			{
-				foreach (var tag in gameplayEffect.spec.GameplayEffect.gameplayEffectTags.GrantedTags)
-				{
-					Debug.Log(tag.ToString());
-				}
-			}
+			// foreach (var gameplayEffect in AppliedGameplayEffects)
+			// {
+			// 	foreach (var tag in gameplayEffect.spec.GameplayEffect.gameplayEffectTags.GrantedTags)
+			// 	{
+			// 		Debug.Log(tag.ToString());
+			// 	}
+			// }
 		}
 
 		public void RemoveAbilitiesWithTag(GameplayTagScriptableObject tag)
@@ -64,7 +65,7 @@ namespace AbilitySystem
 
 			if (tagRequirementsOK == false) return false;
 
-			Debug.Log("Applying GameplayEffect: " + geSpec.GameplayEffect.name); // Добавьте эту строку
+			// Debug.Log("Applying GameplayEffect: " + geSpec.GameplayEffect.name); // Добавьте эту строку
 
 			switch (geSpec.GameplayEffect.gameplayEffect.DurationPolicy)
 			{
@@ -141,6 +142,19 @@ namespace AbilitySystem
 				{
 					case EAttributeModifier.Add:
 						attributeValue.BaseValue += magnitude;
+
+						if (attribute == this.GetComponent<Unit>().healthAttribute)
+						{
+							if (magnitude < 0)
+							{
+								this.GetComponent<Unit>().ShowDamage(-magnitude);
+							}
+							else
+							{
+								this.GetComponent<Unit>().ShowDamage(magnitude, true);
+							}
+						}
+
 						break;
 					case EAttributeModifier.Multiply:
 						attributeValue.BaseValue *= magnitude;
@@ -149,6 +163,7 @@ namespace AbilitySystem
 						attributeValue.BaseValue = magnitude;
 						break;
 				}
+
 
 				this.AttributeSystem.SetAttributeBaseValue(attribute, attributeValue.BaseValue);
 			}

@@ -35,6 +35,7 @@ public class TankAI : PlayerAI
 			}
 			else
 			{
+				isTaskedToFollow = false;
 				return;
 			}
 		}
@@ -42,6 +43,7 @@ public class TankAI : PlayerAI
 		{
 			// Если юниту был дан приказ перемещаться, но цель остается прежней
 			lineRenderer.startColor = lineRenderer.endColor = Color.green;
+			isTaskedToFollow = false;
 			MoveToPointSlowly();
 		}
 	}
@@ -69,6 +71,7 @@ public class TankAI : PlayerAI
 		{
 			selectedTarget = enemy;
 			isInCombat = true;
+			isTaskedToFollow = true;
 			if (TargetIsOutOfAttackRange())
 			{
 				MoveAgainstTarget();

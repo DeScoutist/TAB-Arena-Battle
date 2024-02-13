@@ -4,6 +4,10 @@ using UnitSystem;
 
 public class DpsAI : PlayerAI
 {
+	private Vector3 leftStrafePosition;
+	private Vector3 rightStrafePosition;
+	private bool isStrafingRight = true;
+
 	protected override void Start()
 	{
 		base.Start();
@@ -15,41 +19,54 @@ public class DpsAI : PlayerAI
 
 		if (selectedTarget != null)
 		{
-			StrafeAroundTarget();
+			// StrafeAroundTarget();
 		}
+	}
+
+	
+	protected override void RotateTowardsSelectedTarget()
+	{
+		if (selectedTarget == null) return;
+
+		Vector3 direction = selectedTarget.transform.position - this.transform.position;
+		float yRotation = Quaternion.LookRotation(direction).eulerAngles.y;
+		transform.rotation = Quaternion.Euler(0, yRotation, 0);
+
+		// Обновляем позиции для стрейфа
+		Vector3 strafeDirection = new Vector3(-direction.z, 0, direction.x);
+		float strafeDistance = 1f; // Расстояние стрейфа
+		leftStrafePosition = transform.position - strafeDirection * strafeDistance;
+		rightStrafePosition = transform.position + strafeDirection * strafeDistance;
 	}
 
 	protected void StrafeAroundTarget()
 	{
 		if (!isTaskedToFollow) return;
-		
-		// Расстояние от цели, на котором должен находиться юнит
-		float distanceFromTarget = 5f;
 
-		// Минимальное расстояние от босса
-		float minDistanceFromBoss = 1f;
-
-		// Скорость стрейфа
-		float strafeSpeed = 5f;
-
-		// Расчет новой позиции
-		Vector3 targetPosition = selectedTarget.transform.position; // позиция цели
-		Vector3 directionToTarget = (targetPosition - transform.position).normalized; // направление к цели
-		Vector3 strafeDirection = new Vector3(-directionToTarget.z, 0, directionToTarget.x); // направление стрейфа (перпендикулярно направлению к цели)
-
-		// Расчет позиции для стрейфа с использованием функции Mathf.Sin для создания движения влево-вправо
-		Vector3 strafePosition = targetPosition + directionToTarget * distanceFromTarget + strafeDirection * Mathf.Sin(Time.time * strafeSpeed);
-
-		// Проверка, что юнит находится на безопасном расстоянии от босса
-		if (Vector3.Distance(transform.position, targetPosition) > minDistanceFromBoss)
+		// Если цель перемещается или персонаж находится вне радиуса атаки, следуем за целью
+		if (Vector3.Distance(transform.position, selectedTarget.transform.position) > attackRadius)
 		{
-			// Перемещение юнита к расчетной позиции
-			transform.position = Vector3.MoveTowards(transform.position, strafePosition, speed * Time.deltaTime);
+			MoveAgainstTarget();
+			return;
 		}
 
-		// Поворот юнита к цели
-		Quaternion toTarget = Quaternion.LookRotation(targetPosition - transform.position);
-		transform.rotation = Quaternion.Slerp(transform.rotation, toTarget, speed * Time.deltaTime);
+		// Если цель не перемещается и персонаж находится в радиусе атаки, стрейфимся
+		if (isStrafingRight)
+		{
+			transform.position = Vector3.MoveTowards(transform.position, rightStrafePosition, speed * Time.deltaTime);
+			if (transform.position == rightStrafePosition)
+			{
+				isStrafingRight = false;
+			}
+		}
+		else
+		{
+			transform.position = Vector3.MoveTowards(transform.position, leftStrafePosition, speed * Time.deltaTime);
+			if (transform.position == leftStrafePosition)
+			{
+				isStrafingRight = true;
+			}
+		}
 	}
 
 	protected override void HandleRightClick()
@@ -76,6 +93,7 @@ public class DpsAI : PlayerAI
 		{
 			// Если юниту был дан приказ перемещаться
 			MoveToPoint();
+			isTaskedToFollow = false;
 			lineRenderer.startColor = lineRenderer.endColor = Color.green;
 		}
 	}
@@ -87,6 +105,7 @@ public class DpsAI : PlayerAI
 		{
 			selectedTarget = enemy;
 			isInCombat = true;
+			isTaskedToFollow = true;
 			if (TargetIsOutOfAttackRange())
 			{
 				MoveAgainstTarget();

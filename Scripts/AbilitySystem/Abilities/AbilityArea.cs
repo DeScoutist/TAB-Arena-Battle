@@ -8,11 +8,10 @@ namespace AbilitySystem.Abilities
 		// Список игроков в области действия способности
 		public List<AbilitySystemCharacter> playersInArea = new List<AbilitySystemCharacter>();
 
-		public float radius = 5f; // Радиус области действия способности
 		public LayerMask playerLayer; // Слой, на котором находятся игроки
 
 		// Метод для проверки, находятся ли игроки в области действия способности
-		public List<AbilitySystemCharacter> GetPlayersInArea()
+		public List<AbilitySystemCharacter> GetPlayersInArea(float radius)
 		{
 			List<AbilitySystemCharacter> playersInArea = new List<AbilitySystemCharacter>();
 

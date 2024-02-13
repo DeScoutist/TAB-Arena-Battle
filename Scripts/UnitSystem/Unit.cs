@@ -13,7 +13,7 @@ namespace UnitSystem
 		public bool isTank = false;
 		[SerializeField] private GameObject damagePrefab; // Префаб текста урона
 		private AttributeSystem.Components.AttributeSystemComponent attributeSystem; // Система атрибутов
-		[SerializeField] private AttributeSystem.Authoring.AttributeScriptableObject healthAttribute; // Атрибут здоровья
+		[SerializeField] public AttributeSystem.Authoring.AttributeScriptableObject healthAttribute; // Атрибут здоровья
 		[SerializeField] private AttributeSystem.Authoring.AttributeScriptableObject maxHealthAttribute; // Атрибут max здоровья
 		public DebuffSystem DebuffSystem { get; private set; }
 		
@@ -23,7 +23,8 @@ namespace UnitSystem
 			{
 				if (attributeSystem.GetAttributeValue(healthAttribute, out var healthValue))
 				{
-					return (healthValue.CurrentValue / healthValue.BaseValue) * 100;
+					attributeSystem.GetAttributeValue(maxHealthAttribute, out var maxHPValue);
+					return (healthValue.CurrentValue / maxHPValue.CurrentValue) * 100;
 				}
 				return 0;
 			}
@@ -60,6 +61,10 @@ namespace UnitSystem
 				{
 					ShowDamage(-amount);
 				}
+				else
+				{
+					ShowDamage(amount, true);
+				}
 			}
 
 			attributeSystem.GetAttributeValue(maxHealthAttribute, out var maxHealthValue);
@@ -67,17 +72,17 @@ namespace UnitSystem
 			onHealthChanged?.Invoke(healthValue.BaseValue / maxHealthValue.BaseValue);
 		}
 		
-		private void ShowDamage(float amount)
+		public void ShowDamage(float amount, bool isHeal = false)
 		{
 			// Создайте новый экземпляр префаба урона
 			GameObject damageInstance = Instantiate(damagePrefab, transform.position, Quaternion.identity, transform);
 			damageInstance.GetComponent<TextMeshPro>().text = amount.ToString();
 
 			// Запустите корутину для анимации текста урона
-			StartCoroutine(AnimateDamage(damageInstance));
+			StartCoroutine(AnimateDamage(damageInstance, isHeal));
 		}
 
-		private IEnumerator AnimateDamage(GameObject damageInstance)
+		private IEnumerator AnimateDamage(GameObject damageInstance, bool isHeal = false)
 		{
 			float duration = 1f; // Продолжительность анимации
 			float scale = 1.5f; // Максимальный масштаб текста
@@ -85,6 +90,9 @@ namespace UnitSystem
 
 			TextMeshPro damageText = damageInstance.GetComponent<TextMeshPro>();
 			Vector3 initialScale = damageText.transform.localScale;
+			
+			if (isHeal) damageText.color = Color.green; 
+			else damageText.color = Color.yellow;
 
 			while (elapsed < duration)
 			{

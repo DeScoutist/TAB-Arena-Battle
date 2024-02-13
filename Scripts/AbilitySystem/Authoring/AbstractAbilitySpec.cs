@@ -35,7 +35,7 @@ namespace AbilitySystem.Authoring
 		/// <summary>
 		/// Is this AbilitySpec currently casting?
 		/// </summary>
-		public bool isCasting;
+		// public bool isCasting;
 
 		public UnitUI unitUI;
 
@@ -48,7 +48,6 @@ namespace AbilitySystem.Authoring
 		{
 			this.Ability = ability;
 			this.Owner = owner;
-			// TODO: SDELATJ CASTING BAR
 			this.unitUI = owner.GetComponent<UnitUI>();
 		}
 
@@ -71,8 +70,7 @@ namespace AbilitySystem.Authoring
 			yield return PreActivate();
 			if (Ability.CastTime > 0)
 			{
-				Debug.Log("tryACtivateCastTime>0");
-				isCasting = true;
+				// isCasting = true;
 				unitUI.StartCasting(this);
 			}
 			else

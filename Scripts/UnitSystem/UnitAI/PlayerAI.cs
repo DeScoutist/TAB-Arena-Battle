@@ -4,10 +4,12 @@ using AbilitySystem;
 using GameplayTag.Authoring;
 using UnityEngine;
 using UnitSystem;
+using UnityEngine.UI;
 
 public class PlayerAI : MonoBehaviour
 {
 	protected const float WAIT_ATTACK_DURATION = 2f;
+	protected const float MIN_DISTANCE_TO_TARGET = 1f;
 	protected const float LINE_RENDERER_WIDTH = 0.1f;
 	protected const string BOSS_TAG = "BOSS_TAG";
 	protected const string DEFAULT_SHADER = "Sprites/Default";
@@ -23,22 +25,39 @@ public class PlayerAI : MonoBehaviour
 	protected bool isAttackOnCooldown = false;
 	protected Vector3 positionToRunTo;
 	protected LineRenderer lineRenderer;
+
 	protected Unit selectedTarget;
+
 	protected bool isInCombat = false;
 	protected Camera playerCamera;
 	protected Unit thisUnit;
+	protected UnitUI thisUnitUI;
 	protected float lastAttackTime = 0f; // Добавьте это в начало класса
 	protected AbilitySystemCharacter character; // Ссылка на AbilitySystemCharacter
+	protected AbilityController abilityController; // Ссылка на AbilityController
 
+	// TAGS
 	protected GameplayTagScriptableObject stunTag;
-	
+
+	private UnitFrameController UnitFrameController;
+
+	public Unit SelectedTarget
+	{
+		get { return selectedTarget; }
+		protected set { selectedTarget = value; }
+	}
 
 	protected virtual void Start()
 	{
 		thisUnit = this.GetComponent<Unit>();
+		thisUnitUI = this.GetComponent<UnitUI>();
 		InitializeLineRenderer();
 		playerCamera = GameObject.FindWithTag("PLAYER_CAMERA").GetComponent<Camera>();
 		character = GetComponent<AbilitySystemCharacter>(); // Получаем компонент AbilitySystemCharacter
+		abilityController = GetComponent<AbilityController>(); // Получаем компонент AbilityController
+
+		// Находим объект UnitFrameController на сцене и получаем его компонент UnitFrameController
+		UnitFrameController = GameObject.Find("SelectedUnitFrame").GetComponent<UnitFrameController>();
 
 		LoadTags();
 	}
@@ -48,7 +67,7 @@ public class PlayerAI : MonoBehaviour
 		// Инициализируем stunTag
 		stunTag = Resources.Load<GameplayTagScriptableObject>("Prefabs/Tags/CharacterStates/Stunned");
 	}
-	
+
 	protected void InitializeLineRenderer()
 	{
 		lineRenderer = gameObject.AddComponent<LineRenderer>();
@@ -60,17 +79,18 @@ public class PlayerAI : MonoBehaviour
 	protected virtual void Update()
 	{
 		ManageMovement();
+		RotateTowardsSelectedTarget();
 
 		if (IsPlayerControlled())
 		{
-			Debug.Log("123123123");
 			// Если персонаж оглушен, игнорируем ввод игрока
-			if (character.AppliedGameplayEffects.Any(effect => effect.spec.GameplayEffect.gameplayEffectTags.GrantedTags.Contains(stunTag)))
+			if (character.AppliedGameplayEffects.Any(effect =>
+				    effect.spec.GameplayEffect.gameplayEffectTags.GrantedTags.Contains(stunTag)))
 			{
-				Debug.Log("Stunned");
+				// Debug.Log("Stunned");
 				return;
 			}
-			
+
 			HandlePlayerInput();
 
 			if (isTaskedToRun)
@@ -88,6 +108,40 @@ public class PlayerAI : MonoBehaviour
 			if (attackRoutine == null)
 			{
 				attackRoutine = StartCoroutine(TryAttackTarget());
+			}
+		}
+
+		// Если этот персонаж является выбранным, обновляем UI
+		if (UnitSelection.selectedUnit == thisUnit)
+		{
+			// Обновляем UI для выбранного юнита
+			if (UnitSelection.selectedUnit != null)
+			{
+				UnitFrameController.SelectedUnitFrame.SetActive(true);
+				UnitFrameController.SelectedUnitIcon.sprite =
+					thisUnit.transform.Find("Icon").GetComponent<SpriteRenderer>().sprite;
+				UnitFrameController.SelectedUnitName.text = thisUnit.name;
+				UnitFrameController.SelectedUnitHealthBar.fillAmount = thisUnitUI.HealthBar.fillAmount;
+				UnitFrameController.SelectedUnitCastBar.fillAmount = thisUnitUI.CastBar.fillAmount;
+			}
+			else
+			{
+				UnitFrameController.SelectedUnitFrame.SetActive(false);
+			}
+
+			// Обновляем UI для цели выбранного юнита
+			if (selectedTarget != null)
+			{
+				UnitFrameController.TargetedUnitFrame.SetActive(true);
+				UnitFrameController.TargetedUnitIcon.sprite = selectedTarget.transform.Find("Icon").GetComponent<SpriteRenderer>().sprite;
+				UnitFrameController.TargetedUnitName.text = selectedTarget.name;
+				UnitFrameController.TargetedUnitHealthBar.fillAmount = selectedTarget.GetComponent<UnitUI>().HealthBar.fillAmount;
+				UnitFrameController.TargetedUnitCastBar.fillAmount =
+					selectedTarget.GetComponent<UnitUI>().CastBar.fillAmount;
+			}
+			else
+			{
+				UnitFrameController.TargetedUnitFrame.SetActive(false);
 			}
 		}
 	}
@@ -139,25 +193,25 @@ public class PlayerAI : MonoBehaviour
 			isTaskedToFollow = true;
 			selectedTarget = enemy;
 			isInCombat = true;
+			
 			if (TargetIsOutOfAttackRange())
 			{
 				MoveAgainstTarget();
 			}
 		}
 	}
+	
+	protected virtual void RotateTowardsSelectedTarget()
+	{
+		if (selectedTarget == null) return;
 
+		Vector3 direction = selectedTarget.transform.position - this.transform.position;
+		float yRotation = Quaternion.LookRotation(direction).eulerAngles.y;
+		transform.rotation = Quaternion.Euler(0, yRotation, 0);
+	}
+	
 	protected virtual void MoveToPoint()
 	{
-		// Получаем текущий тег персонажа
-		// GameplayTag.Authoring.GameplayTagScriptableObject currentTag = thisUnit.GetCurrentTag();
-		//
-		// // Проверяем, является ли текущий тег одним из тегов, запрещающих движение
-		// if (currentTag == thisUnit.stunnedTag || currentTag == thisUnit.immobilizedTag || currentTag == thisUnit.astralTag)
-		// {
-		// 	// Если персонаж обладает тегом, запрещающим движение, прекращаем выполнение метода
-		// 	return;
-		// }
-
 		float distance;
 		Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
 		Plane plane = new Plane(Vector3.up, transform.position);
@@ -178,9 +232,16 @@ public class PlayerAI : MonoBehaviour
 	{
 		if (isTaskedToRun)
 		{
-			if (selectedTarget && isTaskedToFollow)
+			if (selectedTarget != null && isTaskedToFollow)
 			{
-				positionToRunTo = selectedTarget.transform.position;
+				Vector3 directionToTarget = (selectedTarget.transform.position - transform.position).normalized;
+				positionToRunTo = selectedTarget.transform.position - directionToTarget * MIN_DISTANCE_TO_TARGET;
+			}
+
+			UnitUI unitUI = GetComponent<UnitUI>();
+			if (unitUI != null && unitUI.IsCasting())
+			{
+				unitUI.CancelCasting();
 			}
 
 			transform.position = Vector3.MoveTowards(transform.position, positionToRunTo, speed * Time.deltaTime);
