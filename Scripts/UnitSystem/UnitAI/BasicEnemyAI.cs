@@ -2,9 +2,10 @@
 using System.Linq;
 using AbilitySystem.Authoring;
 using UnitSystem;
+using UnitSystem.UnitAI;
 using UnityEngine;
 
-public class BasicEnemyAI : MonoBehaviour
+public class BasicEnemyAI : MonoBehaviour, IAI
 {
 	public float speed = 5f;
 	public float attackRadius = 4f;
@@ -17,8 +18,9 @@ public class BasicEnemyAI : MonoBehaviour
 	public Unit Target;
 
 	// TODO: При касте способности, устанавливать эту позицию в цель способности (НУЖНО РЕАЛИЗОВАТЬ ПРАВИЛЬНЫЙ АЛГОРИТМ ВЫБОРА ПОЗИЦИИ ДЛЯ СПЕЛЛА)
-	public Vector3 SpellTargetPosition;
-	public Quaternion SpellTargetRotation;
+	public UnityEngine.Transform transform => base.transform;
+	public Vector3 SpellTargetPosition { get; set; }
+	public Quaternion SpellTargetRotation { get; set; }
 
 	private Unit meUnit;
 	private Coroutine attackRoutine;
@@ -114,14 +116,19 @@ public class BasicEnemyAI : MonoBehaviour
 		
 		SpellTargetPosition = Target.transform.position;
 		SpellTargetRotation = Target.transform.rotation;
-		
+
+		random = 2;
 		switch (random)
 		{
 			case 0:
 				this.abilityController.UseAbility(random);
 				break;
 			case 1:
-				SpellTargetPosition += new Vector3(Random.Range(0, 5), 0, Random.Range(0, 5));
+				SpellTargetPosition += new Vector3(Random.Range(0, 15), 0, Random.Range(0, 15));
+				this.abilityController.UseAbility(random);
+				break;
+			case 2:
+				SpellTargetPosition += new Vector3(Random.Range(0, 15), 0, Random.Range(0, 15));
 				this.abilityController.UseAbility(random);
 				break;
 		}

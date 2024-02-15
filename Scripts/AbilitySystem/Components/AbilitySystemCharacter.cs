@@ -42,6 +42,17 @@ namespace AbilitySystem
 			// }
 		}
 
+		// public void AuraProcs()
+		// {
+		// 	foreach (AbstractAbilitySpec ability in GrantedAbilities)
+		// 	{
+		// 		if (ability is AuraAbilityScriptableObject.AuraAbilitySpec auraAbility)
+		// 		{
+		// 			auraAbility.Update();
+		// 		}
+		// 	}
+		// }
+		
 		public void RemoveAbilitiesWithTag(GameplayTagScriptableObject tag)
 		{
 			for (var i = GrantedAbilities.Count - 1; i >= 0; i--)
@@ -278,6 +289,7 @@ namespace AbilitySystem
 			this.AttributeSystem.ResetAttributeModifiers();
 			UpdateAttributeSystem();
 
+			// AuraProcs();
 			DebugPrintGrantedTags();
 			TickGameplayEffects();
 			CleanGameplayEffects();

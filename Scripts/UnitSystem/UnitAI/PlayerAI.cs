@@ -4,9 +4,10 @@ using AbilitySystem;
 using GameplayTag.Authoring;
 using UnityEngine;
 using UnitSystem;
+using UnitSystem.UnitAI;
 using UnityEngine.UI;
 
-public class PlayerAI : MonoBehaviour
+public class PlayerAI : MonoBehaviour, IAI
 {
 	protected const float WAIT_ATTACK_DURATION = 2f;
 	protected const float MIN_DISTANCE_TO_TARGET = 1f;
@@ -18,7 +19,11 @@ public class PlayerAI : MonoBehaviour
 	[SerializeField] protected float attackRadius = 4f;
 	[SerializeField] protected float attackDamage = 10f;
 	[SerializeField] protected float stopDistance = 3f;
-
+	
+	public UnityEngine.Transform transform => base.transform;
+	public Vector3 SpellTargetPosition { get; set; }
+	public Quaternion SpellTargetRotation { get; set; }
+	
 	protected Coroutine attackRoutine;
 	protected bool isTaskedToRun = false;
 	protected bool isTaskedToFollow = false;

@@ -47,6 +47,15 @@ public class DebuffSystem : MonoBehaviour
 				{
 					timerImage.fillAmount = gameplayEffect.spec.DurationRemaining / gameplayEffect.spec.TotalDuration;
 					timerText.text = gameplayEffect.spec.DurationRemaining.ToString("F1");
+
+					if (gameplayEffect.spec.DurationRemaining > 3)
+					{
+						timerText.color = Color.white;
+					}
+					else
+					{
+						timerText.color = Color.red;
+					}
 				}
 			}
 		}
