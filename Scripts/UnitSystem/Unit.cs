@@ -74,6 +74,16 @@ namespace UnitSystem
 		
 		public void ShowDamage(float amount, bool isHeal = false)
 		{
+			// Получаем 1% от общего здоровья персонажа
+			attributeSystem.GetAttributeValue(maxHealthAttribute, out var healthValue);
+			float onePercentHealth = healthValue.BaseValue * 0.02f;
+
+			// Если модуль amount меньше 1% от общего здоровья, возвращаем управление
+			if (Math.Abs(amount) < onePercentHealth)
+			{
+				return;
+			}
+			
 			// Создайте новый экземпляр префаба урона
 			GameObject damageInstance = Instantiate(damagePrefab, transform.position, Quaternion.identity, transform);
 			damageInstance.GetComponent<TextMeshPro>().text = amount.ToString();
@@ -84,14 +94,15 @@ namespace UnitSystem
 
 		private IEnumerator AnimateDamage(GameObject damageInstance, bool isHeal = false)
 		{
+			TextMeshPro damageText = damageInstance.GetComponent<TextMeshPro>();
+			
 			float duration = 1f; // Продолжительность анимации
 			float scale = 1.5f; // Максимальный масштаб текста
 			float elapsed = 0f;
 
-			TextMeshPro damageText = damageInstance.GetComponent<TextMeshPro>();
 			Vector3 initialScale = damageText.transform.localScale;
 			
-			if (isHeal) damageText.color = Color.green; 
+			if (isHeal) damageText.color = Color.green;
 			else damageText.color = Color.yellow;
 
 			while (elapsed < duration)

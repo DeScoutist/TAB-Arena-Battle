@@ -15,11 +15,11 @@ namespace AbilitySystem
         /// <summary>
         /// 
         /// </summary>
-        public float DurationRemaining { get; private set; }
+        public float DurationRemaining { get; set; }
 
         public float TotalDuration { get; private set; }
         public GameplayEffectPeriod PeriodDefinition { get; private set; }
-        public float TimeUntilPeriodTick { get; private set; }
+        public float TimeUntilPeriodTick { get; set; }
         public float Level { get; private set; }
         public AbilitySystemCharacter Source { get; private set; }
         public AbilitySystemCharacter Target { get; private set; }

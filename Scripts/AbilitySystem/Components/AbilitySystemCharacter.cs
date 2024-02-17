@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using AbilitySystem.Authoring;
 using AttributeSystem.Authoring;
 using AttributeSystem.Components;
@@ -52,7 +53,7 @@ namespace AbilitySystem
 		// 		}
 		// 	}
 		// }
-		
+
 		public void RemoveAbilitiesWithTag(GameplayTagScriptableObject tag)
 		{
 			for (var i = GrantedAbilities.Count - 1; i >= 0; i--)
@@ -146,6 +147,15 @@ namespace AbilitySystem
 				var modifier = spec.GameplayEffect.gameplayEffect.Modifiers[i];
 				var magnitude = (modifier.ModifierMagnitude.CalculateMagnitude(spec) * modifier.Multiplier)
 					.GetValueOrDefault();
+
+				// Найти количество стаков для этого эффекта
+				var effectContainer =
+					AppliedGameplayEffects.FirstOrDefault(e => e.spec.GameplayEffect == spec.GameplayEffect);
+				var stacks = effectContainer != null ? effectContainer.Stacks : 1;
+
+				// Умножить величину на количество стаков
+				magnitude *= stacks;
+
 				var attribute = modifier.Attribute;
 				this.AttributeSystem.GetAttributeValue(attribute, out var attributeValue);
 
@@ -206,8 +216,72 @@ namespace AbilitySystem
 					{ Attribute = modifier.Attribute, Modifier = attributeModifier });
 			}
 
-			AppliedGameplayEffects.Add(new GameplayEffectContainer()
-				{ spec = spec, modifiers = modifiersToApply.ToArray() });
+			// Debug.Log($"{spec.GameplayEffect.name}");
+			
+			foreach(var effect in AppliedGameplayEffects)
+			{
+				// Debug.Log($"{effect.spec.GameplayEffect.name} + {this.gameObject.name}");
+			}
+			
+			// Debug.Log($"{spec.GameplayEffect.name}");
+			// Проверяем, есть ли уже такой эффект на персонаже
+			var existingEffect = AppliedGameplayEffects.FirstOrDefault(effectContainer =>
+				effectContainer.spec.GameplayEffect == spec.GameplayEffect);
+			// Debug.Log($"Checking for existing effect: {spec.GameplayEffect.name}");
+
+			if (existingEffect != null)
+			{
+				// Debug.Log($"Existing effect found: {existingEffect.spec.GameplayEffect.name}");
+				if (existingEffect.spec.GameplayEffect.gameplayEffect.DurationPolicy == EDurationPolicy.Infinite)
+				{
+					// Debug.Log($"Duration policy is infinite. Adding new effect and returning. {existingEffect.spec.GameplayEffect.name}");
+					AppliedGameplayEffects.Add(new GameplayEffectContainer()
+						{ spec = spec, modifiers = modifiersToApply.ToArray() });
+					return;
+				}
+
+				if (existingEffect.Stacks < spec.GameplayEffect.MaxStacks)
+				{
+					// Debug.Log($"Stacks not maxed. Incrementing stacks. {existingEffect.spec.GameplayEffect.name}");
+					existingEffect.Stacks++;
+				}
+
+				if (spec.GameplayEffect.StacksRenewing)
+				{
+					// Debug.Log($"StacksRenewing is true. Updating duration and possibly TimeUntilPeriodTick. {existingEffect.spec.GameplayEffect.name}");
+					existingEffect.spec.DurationRemaining = spec.GameplayEffect.gameplayEffect.DurationMultiplier;
+					if (spec.GameplayEffect.RefreshingTickPeriod)
+					{
+						existingEffect.spec.TimeUntilPeriodTick = spec.GameplayEffect.Period.Period;
+					}
+				}
+				else
+				{
+					// Debug.Log($"StacksRenewing is false. Looking for oldest effect to replace. {existingEffect.spec.GameplayEffect.name}");
+					var oldestEffect = AppliedGameplayEffects
+						.Where(effectContainer =>
+							effectContainer.spec.GameplayEffect.gameplayEffectTags.AssetTag.Equals(spec.GameplayEffect
+								.gameplayEffectTags.AssetTag))
+						.OrderBy(effectContainer => effectContainer.spec.DurationRemaining)
+						.FirstOrDefault();
+
+					if (oldestEffect != null)
+					{
+						// Debug.Log($"Oldest effect found: {oldestEffect.spec.GameplayEffect.name}. Removing it.");
+						AppliedGameplayEffects.Remove(oldestEffect);
+					}
+
+					// Debug.Log($"Adding new effect. {existingEffect.spec.GameplayEffect.name}");
+					AppliedGameplayEffects.Add(new GameplayEffectContainer()
+						{ spec = spec, modifiers = modifiersToApply.ToArray() });
+				}
+			}
+			else
+			{
+				// Debug.Log($"No existing effect found. Adding new effect.");
+				AppliedGameplayEffects.Add(new GameplayEffectContainer()
+					{ spec = spec, modifiers = modifiersToApply.ToArray() });
+			}
 		}
 
 		void UpdateAttributeSystem()
@@ -245,7 +319,8 @@ namespace AbilitySystem
 					ApplyInstantGameplayEffect(ge);
 				}
 
-				if (ge.DurationRemaining <= 0)
+				if (ge.DurationRemaining <= 0 &&
+				    ge.GameplayEffect.gameplayEffect.DurationPolicy == EDurationPolicy.HasDuration)
 				{
 					AppliedGameplayEffects.RemoveAt(i);
 				}
@@ -304,6 +379,7 @@ namespace AbilitySystem
 	{
 		public GameplayEffectSpec spec;
 		public ModifierContainer[] modifiers;
+		public int Stacks = 1;
 
 		public class ModifierContainer
 		{

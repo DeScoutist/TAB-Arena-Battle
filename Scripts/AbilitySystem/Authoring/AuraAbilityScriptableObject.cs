@@ -108,8 +108,6 @@ namespace AbilitySystem.Authoring
 			/// <returns></returns>
 			public override IEnumerator ActivateAbility()
 			{
-				var radius = ((AuraAbilityScriptableObject)Ability).radius;
-				var targetedPlayers = AoeMarker.GetComponent<AbilityArea>().GetPlayersInArea(radius);
 				// Apply cost and cooldown
 				var cdSpec = this.Owner.MakeOutgoingSpec(this.Ability.Cooldown);
 				var costSpec = this.Owner.MakeOutgoingSpec(this.Ability.Cost);

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace AbilitySystem.Authoring
 {
@@ -18,5 +19,14 @@ namespace AbilitySystem.Authoring
         
         [SerializeField]
         public Sprite Icon; // Иконка для GameplayEffect
+
+        [SerializeField]
+        public float MaxStacks = 1;
+        
+        [SerializeField]
+        public bool StacksRenewing = true;
+        
+        [SerializeField]
+        public bool RefreshingTickPeriod = true;
     }
 }

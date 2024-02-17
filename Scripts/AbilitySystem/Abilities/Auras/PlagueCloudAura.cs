@@ -1,5 +1,6 @@
 ﻿// Aura.cs
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using AbilitySystem.Authoring;
@@ -33,32 +34,42 @@ namespace AbilitySystem.Abilities.Auras
 			set { radius = value; }
 		}
 
-		public void Update()
+		void Start()
 		{
-			// Получаем всех игроков в радиусе
-			Collider[] hitColliders = Physics.OverlapSphere(transform.position, Radius);
-			foreach (var hitCollider in hitColliders)
+			StartCoroutine(UpdateCoroutine());
+		}
+
+		IEnumerator UpdateCoroutine()
+		{
+			while (true)
 			{
-				var player = hitCollider.GetComponent<AbilitySystemCharacter>();
-				if (player != null)
+				// Получаем всех игроков в радиусе
+				Collider[] hitColliders = Physics.OverlapSphere(transform.position, Radius);
+				foreach (var hitCollider in hitColliders)
 				{
-					// Если игрок в радиусе, наносим ему урон каждые три секунды
-					if (!playersInRadius.Contains(player))
+					var player = hitCollider.GetComponent<AbilitySystemCharacter>();
+					if (player != null)
 					{
-						playersInRadius.Add(player);
+						// Если игрок в радиусе, наносим ему урон каждые три секунды
+						if (!playersInRadius.Contains(player))
+						{
+							playersInRadius.Add(player);
+						}
+
+						ApplyEffect(player);
 					}
-
-					ApplyEffect(player);
 				}
-			}
 
-			// Если игрок вышел из радиуса, начинаем отсчет времени
-			for (int i = playersInRadius.Count - 1; i >= 0; i--)
-			{
-				if (!hitColliders.Contains(playersInRadius[i].GetComponent<Collider>()))
+				// Если игрок вышел из радиуса, начинаем отсчет времени
+				for (int i = playersInRadius.Count - 1; i >= 0; i--)
 				{
-					playersInRadius.RemoveAt(i);
+					if (!hitColliders.Contains(playersInRadius[i].GetComponent<Collider>()))
+					{
+						playersInRadius.RemoveAt(i);
+					}
 				}
+
+				yield return new WaitForSeconds(0.5f); // Пауза в 0.5 секунды перед следующей итерацией
 			}
 		}
 
@@ -67,8 +78,8 @@ namespace AbilitySystem.Abilities.Auras
 			// Создаем GameplayEffectSpec из GameplayEffectScriptableObject
 			var effectSpec = player.MakeOutgoingSpec(Effect);
 
-			// Применяем основной эффект способности к игроку
-			player.ApplyGameplayEffectSpecToSelf(effectSpec);
+			// player.ApplyGameplayEffectSpecToSelf(effectSpec);
+
 
 			// Применяем условные эффекты, если они есть
 			foreach (var conditionalEffect in Effect.gameplayEffect.ConditionalGameplayEffects)
@@ -85,12 +96,8 @@ namespace AbilitySystem.Abilities.Auras
 					}
 				}
 
-				// Если у игрока есть все необходимые теги, применяем ConditionalGameplayEffect
-				if (hasAllRequiredTags)
-				{
-					var conditionalEffectSpec = player.MakeOutgoingSpec(conditionalEffect.GameplayEffect);
-					player.ApplyGameplayEffectSpecToSelf(conditionalEffectSpec);
-				}
+				var conditionalEffectSpec = player.MakeOutgoingSpec(conditionalEffect.GameplayEffect);
+				player.ApplyGameplayEffectSpecToSelf(conditionalEffectSpec);
 			}
 		}
 	}
