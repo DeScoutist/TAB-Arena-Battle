@@ -181,8 +181,7 @@ namespace AbilitySystem.Authoring
 				var rotation = owner.SpellTargetRotation;
 				var radius = ((AuraAbilityScriptableObject)Ability).radius;
 
-				Debug.Log("123123123");
-				AoeMarker = Instantiate(AoeMarkerPrefab, position, Quaternion.identity);
+				// AoeMarker = Instantiate(AoeMarkerPrefab, position, Quaternion.identity);
 				var scale = radius;
 				// TODO: Добавить отображение ауры
 				// fill.transform.localScale =

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using AbilitySystem;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -14,9 +15,15 @@ namespace UnitSystem
 		[SerializeField] private GameObject damagePrefab; // Префаб текста урона
 		private AttributeSystem.Components.AttributeSystemComponent attributeSystem; // Система атрибутов
 		[SerializeField] public AttributeSystem.Authoring.AttributeScriptableObject healthAttribute; // Атрибут здоровья
-		[SerializeField] private AttributeSystem.Authoring.AttributeScriptableObject maxHealthAttribute; // Атрибут max здоровья
-		public DebuffSystem DebuffSystem { get; private set; }
-		
+
+		[SerializeField]
+		private AttributeSystem.Authoring.AttributeScriptableObject maxHealthAttribute; // Атрибут max здоровья
+
+		public AbilitySystemCharacter thisAbilitySystemCharacter; // Ссылка на AbilitySystemCharacter
+
+		public float Threat { get; set; }
+		public bool isDead = false; // Добавьте эту строку
+
 		public float HealthPercentage
 		{
 			get
@@ -26,12 +33,14 @@ namespace UnitSystem
 					attributeSystem.GetAttributeValue(maxHealthAttribute, out var maxHPValue);
 					return (healthValue.CurrentValue / maxHPValue.CurrentValue) * 100;
 				}
+
 				return 0;
 			}
 		}
-		
+
 		// Событие, вызываемое при изменении здоровья
-		public delegate void OnHealthChanged(float newHealth);
+		public delegate void OnHealthChanged(float newHealth, Unit dealer, Unit receiver);
+
 		public event OnHealthChanged onHealthChanged;
 
 
@@ -39,24 +48,34 @@ namespace UnitSystem
 		{
 			// Получаем компонент AttributeSystemComponent
 			attributeSystem = GetComponent<AttributeSystem.Components.AttributeSystemComponent>();
-			// DebuffSystem = new DebuffSystem();
+			thisAbilitySystemCharacter = GetComponent<AbilitySystemCharacter>();
 		}
 
 		// Метод для изменения здоровья
-		public void ChangeHealth(float amount)
+		public void ChangeHealth(float amount, Unit dealer, Unit receiver)
 		{
+			if (thisAbilitySystemCharacter.HasTag(AbilitySystem.GameplayTag.Undamageable))
+			{
+				return;
+			}
+
+			if (isDead)
+			{
+				return;
+			}
+
 			if (attributeSystem.GetAttributeValue(healthAttribute, out var healthValue))
 			{
 				// Изменяем базовое значение атрибута здоровья
 				float newHealth = healthValue.BaseValue + amount;
 				healthValue.BaseValue = Mathf.Max(newHealth, 0);
 				attributeSystem.SetAttributeBaseValue(healthAttribute, healthValue.BaseValue);
-				
+
 				if (healthValue.BaseValue <= 0)
 				{
-					Destroy(gameObject);
+					Die();
 				}
-				
+
 				if (amount < 0)
 				{
 					ShowDamage(-amount);
@@ -69,21 +88,26 @@ namespace UnitSystem
 
 			attributeSystem.GetAttributeValue(maxHealthAttribute, out var maxHealthValue);
 			// Вызываем событие
-			onHealthChanged?.Invoke(healthValue.BaseValue / maxHealthValue.BaseValue);
+			onHealthChanged?.Invoke(healthValue.BaseValue / maxHealthValue.BaseValue, dealer, receiver);
 		}
-		
+
 		public void ShowDamage(float amount, bool isHeal = false)
 		{
+			if (isDead)
+			{
+				return;
+			}
+
 			// Получаем 1% от общего здоровья персонажа
 			attributeSystem.GetAttributeValue(maxHealthAttribute, out var healthValue);
 			float onePercentHealth = healthValue.BaseValue * 0.02f;
 
-			// Если модуль amount меньше 1% от общего здоровья, возвращаем управление
+			// Если модуль amount меньше 1% от общего здоровья
 			if (Math.Abs(amount) < onePercentHealth)
 			{
 				return;
 			}
-			
+
 			// Создайте новый экземпляр префаба урона
 			GameObject damageInstance = Instantiate(damagePrefab, transform.position, Quaternion.identity, transform);
 			damageInstance.GetComponent<TextMeshPro>().text = amount.ToString();
@@ -92,16 +116,54 @@ namespace UnitSystem
 			StartCoroutine(AnimateDamage(damageInstance, isHeal));
 		}
 
+		public void Die()
+		{
+			Debug.Log("789789789789789");
+			// Отключаем все ауры
+			var auras = GetComponents<AbilitySystem.Abilities.Auras.IAura>();
+			foreach (var aura in auras)
+			{
+				Debug.Log("auraDisabled");
+				// Здесь предполагается, что у вас есть метод для отключения ауры.
+				// Если такого метода нет, вам нужно будет его добавить.
+				aura.Disable();
+			}
+
+			if (this.GetComponent<UnitUI>())
+			{
+				Debug.Log("unitUi is disabled");
+				this.GetComponent<UnitUI>().enabled = false;
+			}
+			
+			// Устанавливаем isDead в true
+			
+			Debug.Log("isDead");
+			isDead = true;
+		}
+
+		public void DieInTime(float time)
+		{
+			Debug.Log("123123123123");
+			StartCoroutine(DieAfterDelay(time));
+		}
+
+		private IEnumerator DieAfterDelay(float delay)
+		{
+			yield return new WaitForSeconds(delay);
+			Debug.Log("456456456456");
+			Die();
+		}
+
 		private IEnumerator AnimateDamage(GameObject damageInstance, bool isHeal = false)
 		{
 			TextMeshPro damageText = damageInstance.GetComponent<TextMeshPro>();
-			
+
 			float duration = 1f; // Продолжительность анимации
 			float scale = 1.5f; // Максимальный масштаб текста
 			float elapsed = 0f;
 
 			Vector3 initialScale = damageText.transform.localScale;
-			
+
 			if (isHeal) damageText.color = Color.green;
 			else damageText.color = Color.yellow;
 

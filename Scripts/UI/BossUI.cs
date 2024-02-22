@@ -61,7 +61,7 @@ public class BossUI : MonoBehaviour
 		CastBar.gameObject.SetActive(false);
 	}
 
-	private void UpdateHealthBar(float healthPercentage)
+	private void UpdateHealthBar(float healthPercentage, Unit dealer, Unit receiver)
 	{
 		// Обновляем полоску здоровья босса
 		HealthBar.fillAmount = healthPercentage;

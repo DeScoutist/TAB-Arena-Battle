@@ -142,6 +142,10 @@ namespace AbilitySystem
 
 		void ApplyInstantGameplayEffect(GameplayEffectSpec spec)
 		{
+			Unit dealer = spec.Source.GetComponent<Unit>(); // The unit who applied the effect
+			// Debug.Log($"{dealer.name} + {spec.GameplayEffect.name}");
+			Unit receiver = this.GetComponent<Unit>(); // The unit who is affected
+
 			for (var i = 0; i < spec.GameplayEffect.gameplayEffect.Modifiers.Length; i++)
 			{
 				var modifier = spec.GameplayEffect.gameplayEffect.Modifiers[i];
@@ -159,30 +163,47 @@ namespace AbilitySystem
 				var attribute = modifier.Attribute;
 				this.AttributeSystem.GetAttributeValue(attribute, out var attributeValue);
 
-				switch (modifier.ModifierOperator)
+				if (attribute == this.GetComponent<Unit>().healthAttribute)
 				{
-					case EAttributeModifier.Add:
-						attributeValue.BaseValue += magnitude;
-
-						if (attribute == this.GetComponent<Unit>().healthAttribute)
+					if (!this.HasTag(GameplayTag.Undamageable))
+					{
+						switch (modifier.ModifierOperator)
 						{
-							if (magnitude < 0)
-							{
-								this.GetComponent<Unit>().ShowDamage(-magnitude);
-							}
-							else
-							{
-								this.GetComponent<Unit>().ShowDamage(magnitude, true);
-							}
-						}
+							case EAttributeModifier.Add:
+								attributeValue.BaseValue += magnitude;
+								if (magnitude < 0)
+								{
+									this.GetComponent<Unit>().ChangeHealth(-magnitude, dealer, receiver);
+								}
+								else
+								{
+									this.GetComponent<Unit>().ChangeHealth(magnitude, dealer, receiver);
+								}
 
-						break;
-					case EAttributeModifier.Multiply:
-						attributeValue.BaseValue *= magnitude;
-						break;
-					case EAttributeModifier.Override:
-						attributeValue.BaseValue = magnitude;
-						break;
+								break;
+							case EAttributeModifier.Multiply:
+								attributeValue.BaseValue *= magnitude;
+								break;
+							case EAttributeModifier.Override:
+								attributeValue.BaseValue = magnitude;
+								break;
+						}
+					}
+				}
+				else
+				{
+					switch (modifier.ModifierOperator)
+					{
+						case EAttributeModifier.Add:
+							attributeValue.BaseValue += magnitude;
+							break;
+						case EAttributeModifier.Multiply:
+							attributeValue.BaseValue *= magnitude;
+							break;
+						case EAttributeModifier.Override:
+							attributeValue.BaseValue = magnitude;
+							break;
+					}
 				}
 
 
@@ -217,12 +238,12 @@ namespace AbilitySystem
 			}
 
 			// Debug.Log($"{spec.GameplayEffect.name}");
-			
-			foreach(var effect in AppliedGameplayEffects)
+
+			foreach (var effect in AppliedGameplayEffects)
 			{
 				// Debug.Log($"{effect.spec.GameplayEffect.name} + {this.gameObject.name}");
 			}
-			
+
 			// Debug.Log($"{spec.GameplayEffect.name}");
 			// Проверяем, есть ли уже такой эффект на персонаже
 			var existingEffect = AppliedGameplayEffects.FirstOrDefault(effectContainer =>
@@ -365,9 +386,28 @@ namespace AbilitySystem
 			UpdateAttributeSystem();
 
 			// AuraProcs();
-			DebugPrintGrantedTags();
+			// DebugPrintGrantedTags();
 			TickGameplayEffects();
 			CleanGameplayEffects();
+		}
+
+		public bool HasTag(GameplayTag tag)
+		{
+			string tagName = tag.ToString();
+			foreach (var gameplayEffect in AppliedGameplayEffects)
+			{
+				foreach (var grantedTag in gameplayEffect.spec.GameplayEffect.gameplayEffectTags.GrantedTags)
+				{
+					Debug.Log($"{this.gameObject.name} have tag: {grantedTag.name}, we are comparing it to {tag.ToString()}");
+					if (grantedTag.name == tagName)
+					{
+						Debug.Log("Has tag: " + tagName);
+						return true;
+					}
+				}
+			}
+
+			return false;
 		}
 	}
 }
@@ -386,5 +426,11 @@ namespace AbilitySystem
 			public AttributeScriptableObject Attribute;
 			public AttributeModifier Modifier;
 		}
+	}
+
+	public enum GameplayTag
+	{
+		Stunned,
+		Undamageable,
 	}
 }

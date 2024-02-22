@@ -19,11 +19,11 @@ public class PlayerAI : MonoBehaviour, IAI
 	[SerializeField] protected float attackRadius = 4f;
 	[SerializeField] protected float attackDamage = 10f;
 	[SerializeField] protected float stopDistance = 3f;
-	
+
 	public UnityEngine.Transform transform => base.transform;
 	public Vector3 SpellTargetPosition { get; set; }
 	public Quaternion SpellTargetRotation { get; set; }
-	
+
 	protected Coroutine attackRoutine;
 	protected bool isTaskedToRun = false;
 	protected bool isTaskedToFollow = false;
@@ -83,6 +83,11 @@ public class PlayerAI : MonoBehaviour, IAI
 
 	protected virtual void Update()
 	{
+		if (thisUnit.isDead)
+		{
+			return;
+		}
+
 		ManageMovement();
 		RotateTowardsSelectedTarget();
 
@@ -138,9 +143,11 @@ public class PlayerAI : MonoBehaviour, IAI
 			if (selectedTarget != null)
 			{
 				UnitFrameController.TargetedUnitFrame.SetActive(true);
-				UnitFrameController.TargetedUnitIcon.sprite = selectedTarget.transform.Find("Icon").GetComponent<SpriteRenderer>().sprite;
+				UnitFrameController.TargetedUnitIcon.sprite =
+					selectedTarget.transform.Find("Icon").GetComponent<SpriteRenderer>().sprite;
 				UnitFrameController.TargetedUnitName.text = selectedTarget.name;
-				UnitFrameController.TargetedUnitHealthBar.fillAmount = selectedTarget.GetComponent<UnitUI>().HealthBar.fillAmount;
+				UnitFrameController.TargetedUnitHealthBar.fillAmount =
+					selectedTarget.GetComponent<UnitUI>().HealthBar.fillAmount;
 				UnitFrameController.TargetedUnitCastBar.fillAmount =
 					selectedTarget.GetComponent<UnitUI>().CastBar.fillAmount;
 			}
@@ -198,14 +205,14 @@ public class PlayerAI : MonoBehaviour, IAI
 			isTaskedToFollow = true;
 			selectedTarget = enemy;
 			isInCombat = true;
-			
+
 			if (TargetIsOutOfAttackRange())
 			{
 				MoveAgainstTarget();
 			}
 		}
 	}
-	
+
 	protected virtual void RotateTowardsSelectedTarget()
 	{
 		if (selectedTarget == null) return;
@@ -214,7 +221,7 @@ public class PlayerAI : MonoBehaviour, IAI
 		float yRotation = Quaternion.LookRotation(direction).eulerAngles.y;
 		transform.rotation = Quaternion.Euler(0, yRotation, 0);
 	}
-	
+
 	protected virtual void MoveToPoint()
 	{
 		float distance;
@@ -278,7 +285,7 @@ public class PlayerAI : MonoBehaviour, IAI
 			if (!isAttackOnCooldown)
 			{
 				isAttackOnCooldown = true;
-				selectedTarget.GetComponent<Unit>().ChangeHealth(-attackDamage);
+				selectedTarget.GetComponent<Unit>().ChangeHealth(-attackDamage, thisUnit, selectedTarget);
 				StartCoroutine(AttackCooldown(WAIT_ATTACK_DURATION));
 			}
 

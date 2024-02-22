@@ -55,6 +55,7 @@ public class AbilityController : MonoBehaviour
         for (var i = 0; i < InitialisationAbilities.Length; i++)
         {
             var spec = InitialisationAbilities[i].CreateSpec(this.abilitySystemCharacter);
+            Debug.Log($"{this.gameObject.name} tries to activate Initialisation ability {spec.Ability.name}");
             this.abilitySystemCharacter.GrantAbility(spec);
             StartCoroutine(spec.TryActivateAbility());
         }

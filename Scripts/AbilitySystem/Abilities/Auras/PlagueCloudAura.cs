@@ -13,6 +13,7 @@ namespace AbilitySystem.Abilities.Auras
 		[SerializeField] private AuraTargets targets;
 		[SerializeField] private GameplayEffectScriptableObject effect;
 		[SerializeField] private float radius;
+		[SerializeField] private bool isOn = true;
 
 		private List<AbilitySystemCharacter> playersInRadius = new List<AbilitySystemCharacter>();
 
@@ -34,14 +35,21 @@ namespace AbilitySystem.Abilities.Auras
 			set { radius = value; }
 		}
 
+		public bool IsOn { 
+			get { return isOn; }
+			set { isOn = value; }
+			
+		}
+
 		void Start()
 		{
+			isOn = true;
 			StartCoroutine(UpdateCoroutine());
 		}
 
 		IEnumerator UpdateCoroutine()
 		{
-			while (true)
+			while (isOn)
 			{
 				// Получаем всех игроков в радиусе
 				Collider[] hitColliders = Physics.OverlapSphere(transform.position, Radius);
@@ -72,11 +80,19 @@ namespace AbilitySystem.Abilities.Auras
 				yield return new WaitForSeconds(0.5f); // Пауза в 0.5 секунды перед следующей итерацией
 			}
 		}
-
+		
+		public void Disable()
+		{
+			StopCoroutine(UpdateCoroutine());
+			// Отключаем компонент MonoBehaviour
+			this.isOn = false;
+		}
+		
 		private void ApplyEffect(AbilitySystemCharacter player)
 		{
 			// Создаем GameplayEffectSpec из GameplayEffectScriptableObject
-			var effectSpec = player.MakeOutgoingSpec(Effect);
+			var spec = player.MakeOutgoingSpec(Effect);
+			spec.Source = this.GetComponent<AbilitySystemCharacter>();
 
 			// player.ApplyGameplayEffectSpecToSelf(effectSpec);
 
@@ -97,6 +113,7 @@ namespace AbilitySystem.Abilities.Auras
 				}
 
 				var conditionalEffectSpec = player.MakeOutgoingSpec(conditionalEffect.GameplayEffect);
+				conditionalEffectSpec.Source = this.GetComponent<AbilitySystemCharacter>();
 				player.ApplyGameplayEffectSpecToSelf(conditionalEffectSpec);
 			}
 		}

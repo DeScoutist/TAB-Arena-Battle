@@ -16,13 +16,13 @@ public class BasicEnemyAI : MonoBehaviour, IAI
 	public float awarenessRadius = 40f; // Радиус внимания
 	private AbilityController _controller;
 	public Unit Target;
+	protected Unit thisUnit;
 
 	// TODO: При касте способности, устанавливать эту позицию в цель способности (НУЖНО РЕАЛИЗОВАТЬ ПРАВИЛЬНЫЙ АЛГОРИТМ ВЫБОРА ПОЗИЦИИ ДЛЯ СПЕЛЛА)
 	public UnityEngine.Transform transform => base.transform;
 	public Vector3 SpellTargetPosition { get; set; }
 	public Quaternion SpellTargetRotation { get; set; }
 
-	private Unit meUnit;
 	private Coroutine attackRoutine;
 	public AbstractAbilitySpec currentAbility;
 	public float stopDistance = 3f;
@@ -31,7 +31,7 @@ public class BasicEnemyAI : MonoBehaviour, IAI
 
 	private void Start()
 	{
-		meUnit = GetComponent<Unit>();
+		thisUnit = GetComponent<Unit>();
 		_controller = GetComponent<AbilityController>();
 	}
 
@@ -51,7 +51,7 @@ public class BasicEnemyAI : MonoBehaviour, IAI
 
 		float distance = Vector3.Distance(transform.position, closestEnemy.transform.position);
 
-		bool canMoveAndRotate = currentAbility == null || !(meUnit.isCasting);
+		bool canMoveAndRotate = currentAbility == null || !(thisUnit.isCasting);
 
 		if (canMoveAndRotate)
 		{
@@ -62,7 +62,7 @@ public class BasicEnemyAI : MonoBehaviour, IAI
 		if (distance <= attackRadius)
 			InitiateAttackOnEnemy(closestEnemy);
 
-		if (currentAbility == null && !meUnit.isCasting && !castedAbilityRecently)
+		if (currentAbility == null && !thisUnit.isCasting && !castedAbilityRecently)
 		{
 			ActivateRandomAbility();
 		}
@@ -164,7 +164,7 @@ public class BasicEnemyAI : MonoBehaviour, IAI
 	{
 		while (Target != null && Vector3.Distance(transform.position, Target.transform.position) <= attackRadius)
 		{
-			Target.ChangeHealth(-attackDamage);
+			Target.ChangeHealth(-attackDamage, thisUnit, Target);
 			yield return new WaitForSeconds(2f);
 		}
 	}

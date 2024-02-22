@@ -32,7 +32,7 @@ public class UnitUI : MonoBehaviour
 		unit.onHealthChanged += UpdateHealthBar;
 	}
 
-	private void UpdateHealthBar(float healthPercentage)
+	private void UpdateHealthBar(float healthPercentage, Unit dealer, Unit receiver)
 	{
 		// Устанавливаем заполненность полоски здоровья
 		HealthBar.fillAmount = healthPercentage;

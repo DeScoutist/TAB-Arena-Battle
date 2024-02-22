@@ -1,4 +1,5 @@
 using System.Collections;
+using UnitSystem;
 using UnityEngine;
 
 namespace AbilitySystem.Authoring
@@ -73,7 +74,7 @@ namespace AbilitySystem.Authoring
 					this.Owner.MakeOutgoingSpec((this.Ability as SummonAbilityScriptableObject).GameplayEffect);
 
 				// Удалить префаб через SummonDuration
-				GameObject.Destroy(summon, (this.Ability as SummonAbilityScriptableObject).SummonDuration);
+				summon.GetComponent<Unit>().DieInTime((this.Ability as SummonAbilityScriptableObject).SummonDuration);
 
 				yield return null;
 			}

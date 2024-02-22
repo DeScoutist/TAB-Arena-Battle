@@ -21,7 +21,7 @@ namespace AbilitySystem
         public GameplayEffectPeriod PeriodDefinition { get; private set; }
         public float TimeUntilPeriodTick { get; set; }
         public float Level { get; private set; }
-        public AbilitySystemCharacter Source { get; private set; }
+        public AbilitySystemCharacter Source { get; set; }
         public AbilitySystemCharacter Target { get; private set; }
         public AttributeValue? SourceCapturedAttribute = null;
 

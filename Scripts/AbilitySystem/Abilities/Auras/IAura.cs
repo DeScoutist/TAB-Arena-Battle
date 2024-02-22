@@ -18,5 +18,8 @@ namespace AbilitySystem.Abilities.Auras
 		[SerializeField] AuraTargets Targets { get; set; }
 		[SerializeField] GameplayEffectScriptableObject Effect { get; set; }
 		[SerializeField] float Radius { get; set; }
+		[SerializeField] bool IsOn { get; set; }
+		
+		void Disable();
 	}
 }
