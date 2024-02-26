@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-namespace AbilitySystem.ModifierMagnitude
+namespace AbilitySystem.Authoring.ModifierMagnitude
 {
     public abstract class ModifierMagnitudeScriptableObject : ScriptableObject
     {

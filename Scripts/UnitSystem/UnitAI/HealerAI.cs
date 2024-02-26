@@ -1,93 +1,95 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using UnitSystem;
-using UnityEngine;
+using UI;
 
-public class HealerAI : PlayerAI
+namespace UnitSystem.UnitAI
 {
-	private const float HEAL_AMOUNT = 20f;
-	private Unit healTarget;
-	private SpawnUnit spawnUnit;
-	private float manaPool = 100f; // Манапул
+	public class HealerAI : PlayerAI
+	{
+		private const float HEAL_AMOUNT = 20f;
+		private Unit healTarget;
+		private SpawnUnit spawnUnit;
+		private float manaPool = 100f; // Манапул
 	
-	protected override void Start()
-	{
-		base.Start();
-
-		spawnUnit = FindObjectOfType<SpawnUnit>();
-	}
-
-	protected override void Update()
-	{
-		base.Update();
-
-		if (!isTaskedToRun && !this.transform.GetComponent<UnitUI>().IsCasting())
+		protected override void Start()
 		{
-			SelectHealTarget();
-			// Dispel();
+			base.Start();
+
+			spawnUnit = FindObjectOfType<SpawnUnit>();
 		}
 
-		if (manaPool <= 0)
+		protected override void Update()
 		{
-			AttackWhenManaPoolIsDepleted();
-		}
-	}
+			base.Update();
 
-	private List<Unit> GetGroupMembers()
-	{
-		return spawnUnit.units;
-	}
+			if (!isTaskedToRun && !this.transform.GetComponent<UnitUI>().IsCasting())
+			{
+				SelectHealTarget();
+				// Dispel();
+			}
 
-	private void SelectHealTarget()
-	{
-		List<Unit> groupMembers = GetGroupMembers();
-
-		Unit mostInjuredUnit = groupMembers.FirstOrDefault(unit => unit.HealthPercentage <= 20 && unit != null);
-		if (mostInjuredUnit != null)
-		{
-			healTarget = mostInjuredUnit;
-			HealUnit(healTarget);
-			return;
+			if (manaPool <= 0)
+			{
+				AttackWhenManaPoolIsDepleted();
+			}
 		}
 
-		Unit tank = groupMembers.FirstOrDefault(unit => unit.isTank && unit.HealthPercentage <= 70);
-		if (tank != null)
+		private List<Unit> GetGroupMembers()
 		{
-			healTarget = tank;
-			HealUnit(healTarget);
-			return;
+			return spawnUnit.units;
 		}
 
-		Unit injuredUnit = groupMembers.FirstOrDefault(unit => unit.HealthPercentage < 100);
-		if (injuredUnit != null)
+		private void SelectHealTarget()
 		{
-			healTarget = injuredUnit;
-			HealUnit(healTarget);
-			return;
+			List<Unit> groupMembers = GetGroupMembers();
+
+			Unit mostInjuredUnit = groupMembers.FirstOrDefault(unit => unit.HealthPercentage <= 20 && unit != null);
+			if (mostInjuredUnit != null)
+			{
+				healTarget = mostInjuredUnit;
+				HealUnit(healTarget);
+				return;
+			}
+
+			Unit tank = groupMembers.FirstOrDefault(unit => unit.isTank && unit.HealthPercentage <= 70);
+			if (tank != null)
+			{
+				healTarget = tank;
+				HealUnit(healTarget);
+				return;
+			}
+
+			Unit injuredUnit = groupMembers.FirstOrDefault(unit => unit.HealthPercentage < 100);
+			if (injuredUnit != null)
+			{
+				healTarget = injuredUnit;
+				HealUnit(healTarget);
+				return;
+			}
+
+			healTarget = null;
 		}
 
-		healTarget = null;
-	}
-
-	private void Dispel()
-	{
-		// Реализация снятия заклинания с союзника каждые 4 секунды
-		// Это псевдокод, вам нужно добавить реальную реализацию
-	}
-
-	private void AttackWhenManaPoolIsDepleted()
-	{
-		// Реализация атаки, когда манапул исчерпан
-		// Это псевдокод, вам нужно добавить реальную реализацию
-	}
-
-	private void HealUnit(Unit unit)
-	{
-		selectedTarget = unit;
-		if (abilityController != null && abilityController.Abilities.Length > 0)
+		private void Dispel()
 		{
-			abilityController.UseAbility(0);
+			// Реализация снятия заклинания с союзника каждые 4 секунды
+			// Это псевдокод, вам нужно добавить реальную реализацию
 		}
-		// manaPool -= HEAL_AMOUNT; // Уменьшаем манапул на количество затраченного на лечение маны
+
+		private void AttackWhenManaPoolIsDepleted()
+		{
+			// Реализация атаки, когда манапул исчерпан
+			// Это псевдокод, вам нужно добавить реальную реализацию
+		}
+
+		private void HealUnit(Unit unit)
+		{
+			selectedTarget = unit;
+			if (abilityController != null && abilityController.Abilities.Length > 0)
+			{
+				abilityController.UseAbility(0);
+			}
+			// manaPool -= HEAL_AMOUNT; // Уменьшаем манапул на количество затраченного на лечение маны
+		}
 	}
 }

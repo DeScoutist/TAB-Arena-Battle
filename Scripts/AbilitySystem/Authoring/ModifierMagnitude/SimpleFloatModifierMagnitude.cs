@@ -1,9 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using AbilitySystem.ModifierMagnitude;
 using UnityEngine;
 
-namespace AbilitySystem
+namespace AbilitySystem.Authoring.ModifierMagnitude
 {
     [CreateAssetMenu(menuName = "Gameplay Ability System/Gameplay Effect/Modifier Magnitude/Simple Float")]
     public class SimpleFloatModifierMagnitude : ModifierMagnitudeScriptableObject

@@ -1,15 +1,16 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class CastPointComponent : MonoBehaviour
+namespace AbilitySystem.Abilities
 {
-    // Start is called before the first frame update
-    [SerializeField]
-    protected Transform CastPoint;
-
-    public Vector3 GetPosition()
+    public class CastPointComponent : MonoBehaviour
     {
-        return CastPoint.transform.position;
+        // Start is called before the first frame update
+        [SerializeField]
+        protected Transform CastPoint;
+
+        public Vector3 GetPosition()
+        {
+            return CastPoint.transform.position;
+        }
     }
 }

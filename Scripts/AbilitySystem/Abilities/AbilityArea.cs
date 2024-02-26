@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using AbilitySystem.Components;
 using UnityEngine;
 
 namespace AbilitySystem.Abilities

@@ -1,5 +1,6 @@
 using System;
 using AbilitySystem.Authoring;
+using AbilitySystem.Components;
 using AttributeSystem.Components;
 
 namespace AbilitySystem

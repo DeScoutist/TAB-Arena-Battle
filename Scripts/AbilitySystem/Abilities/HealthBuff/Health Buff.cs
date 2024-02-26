@@ -1,15 +1,18 @@
-using AbilitySystem;
 using AbilitySystem.Authoring;
+using AbilitySystem.Components;
 using UnityEngine;
 
-public class HealthBuff : MonoBehaviour
+namespace AbilitySystem.Abilities.HealthBuff
 {
-	[SerializeField] private AbstractAbilityScriptableObject ability;
-	[SerializeField] private AbilitySystemCharacter abilitySystemCharacter;
-
-	private void Awake()
+	public class HealthBuff : MonoBehaviour
 	{
-		var abilitySpec = ability.CreateSpec(abilitySystemCharacter);
-		StartCoroutine(abilitySpec.TryActivateAbility());
+		[SerializeField] private AbstractAbilityScriptableObject ability;
+		[SerializeField] private AbilitySystemCharacter abilitySystemCharacter;
+
+		private void Awake()
+		{
+			var abilitySpec = ability.CreateSpec(abilitySystemCharacter);
+			StartCoroutine(abilitySpec.TryActivateAbility());
+		}
 	}
 }

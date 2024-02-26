@@ -3,12 +3,11 @@ using System.Linq;
 using AbilitySystem.Authoring;
 using AttributeSystem.Authoring;
 using AttributeSystem.Components;
-using GameplayTag.Authoring;
+using GameplayTags.Authoring;
 using UnitSystem;
 using UnityEngine;
 
-
-namespace AbilitySystem
+namespace AbilitySystem.Components
 {
 	public class AbilitySystemCharacter : MonoBehaviour
 	{
@@ -410,11 +409,8 @@ namespace AbilitySystem
 			return false;
 		}
 	}
-}
 
 
-namespace AbilitySystem
-{
 	public class GameplayEffectContainer
 	{
 		public GameplayEffectSpec spec;

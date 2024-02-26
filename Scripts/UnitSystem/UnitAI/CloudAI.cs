@@ -1,48 +1,48 @@
 ﻿using System.Collections;
-using UnitSystem.UnitAI;
-using Unity.VisualScripting;
 using UnityEngine;
-using Unit = UnitSystem.Unit;
 
-public class CloudAI : MonoBehaviour, IAI
+namespace UnitSystem.UnitAI
 {
-	public float speed = 1f;
-	public float directionChangeInterval = 7f;
-	private Vector3 movementDirection;
-
-	public UnityEngine.Transform transform => base.transform;
-	public Vector3 SpellTargetPosition { get; set; }
-	public Quaternion SpellTargetRotation { get; set; }
-
-	private Unit thisUnit;
-
-	void Start()
+	public class CloudAI : MonoBehaviour, IAI
 	{
-		thisUnit = GetComponent<Unit>();
-		StartCoroutine(ChangeDirection());
-	}
+		public float speed = 1f;
+		public float directionChangeInterval = 7f;
+		private Vector3 movementDirection;
 
-	void Update()
-	{
-		if (thisUnit.isDead)
+		public UnityEngine.Transform transform => base.transform;
+		public Vector3 SpellTargetPosition { get; set; }
+		public Quaternion SpellTargetRotation { get; set; }
+
+		private Unit thisUnit;
+
+		void Start()
 		{
-			return;
+			thisUnit = GetComponent<Unit>();
+			StartCoroutine(ChangeDirection());
 		}
 
-		transform.position += movementDirection * speed * Time.deltaTime;
-	}
-
-	IEnumerator ChangeDirection()
-	{
-		while (true)
+		void Update()
 		{
 			if (thisUnit.isDead)
 			{
-				yield break;
+				return;
 			}
-			// Случайное направление движения
-			movementDirection = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
-			yield return new WaitForSeconds(directionChangeInterval);
+
+			transform.position += movementDirection * speed * Time.deltaTime;
+		}
+
+		IEnumerator ChangeDirection()
+		{
+			while (true)
+			{
+				if (thisUnit.isDead)
+				{
+					yield break;
+				}
+				// Случайное направление движения
+				movementDirection = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
+				yield return new WaitForSeconds(directionChangeInterval);
+			}
 		}
 	}
 }

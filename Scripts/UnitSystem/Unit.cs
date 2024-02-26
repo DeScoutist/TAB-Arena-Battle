@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using AbilitySystem;
+using AbilitySystem.Components;
 using TMPro;
+using UI;
+using UnitSystem.UnitAI;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +22,8 @@ namespace UnitSystem
 
 		[SerializeField]
 		private AttributeSystem.Authoring.AttributeScriptableObject maxHealthAttribute; // Атрибут max здоровья
+
+		public Dictionary<Unit, float> threatTable = new Dictionary<Unit, float>(); // Таблица угрозы
 
 		public AbilitySystemCharacter thisAbilitySystemCharacter; // Ссылка на AbilitySystemCharacter
 
@@ -43,6 +49,10 @@ namespace UnitSystem
 
 		public event OnHealthChanged onHealthChanged;
 
+		// Событие, вызываемое при изменении угрозы
+		public delegate void OnThreatChanged(float newThreat, Unit dealer);
+
+		public event OnThreatChanged onThreatChanged;
 
 		private void Start()
 		{
@@ -51,10 +61,45 @@ namespace UnitSystem
 			thisAbilitySystemCharacter = GetComponent<AbilitySystemCharacter>();
 		}
 
+		public void AddThreat(Unit dealer, float damage)
+		{
+			float threatMultiplier = 1f; // Default threat multiplier
+			var unitAi = dealer.GetComponent<PlayerAI>();
+
+			// Adjust the threat multiplier based on the type of the dealer
+			if (unitAi is DpsAI)
+			{
+				threatMultiplier = 0.8f;
+			}
+			else if (unitAi is HealerAI)
+			{
+				threatMultiplier = 0.6f;
+			}
+			else if (unitAi is TankAI)
+			{
+				threatMultiplier = 2.6f;
+			}
+
+			float threat = damage * threatMultiplier;
+
+			// If the dealer is already in the threat table, add to their threat
+			if (threatTable.ContainsKey(dealer))
+			{
+				threatTable[dealer] += threat;
+			}
+			// Otherwise, add the dealer to the threat table
+			else
+			{
+				threatTable.Add(dealer, threat);
+			}
+			
+			onThreatChanged?.Invoke(threat, dealer);
+		}
+
 		// Метод для изменения здоровья
 		public void ChangeHealth(float amount, Unit dealer, Unit receiver)
 		{
-			if (thisAbilitySystemCharacter.HasTag(AbilitySystem.GameplayTag.Undamageable))
+			if (thisAbilitySystemCharacter.HasTag(GameplayTag.Undamageable))
 			{
 				return;
 			}
@@ -73,11 +118,13 @@ namespace UnitSystem
 
 				if (healthValue.BaseValue <= 0)
 				{
+					// Debug.Log($"{this.name} dies");
 					Die();
 				}
 
 				if (amount < 0)
 				{
+					AddThreat(dealer, -amount);
 					ShowDamage(-amount);
 				}
 				else
@@ -118,12 +165,10 @@ namespace UnitSystem
 
 		public void Die()
 		{
-			Debug.Log("789789789789789");
 			// Отключаем все ауры
 			var auras = GetComponents<AbilitySystem.Abilities.Auras.IAura>();
 			foreach (var aura in auras)
 			{
-				Debug.Log("auraDisabled");
 				// Здесь предполагается, что у вас есть метод для отключения ауры.
 				// Если такого метода нет, вам нужно будет его добавить.
 				aura.Disable();
@@ -131,26 +176,21 @@ namespace UnitSystem
 
 			if (this.GetComponent<UnitUI>())
 			{
-				Debug.Log("unitUi is disabled");
 				this.GetComponent<UnitUI>().enabled = false;
 			}
-			
+
 			// Устанавливаем isDead в true
-			
-			Debug.Log("isDead");
 			isDead = true;
 		}
 
 		public void DieInTime(float time)
 		{
-			Debug.Log("123123123123");
 			StartCoroutine(DieAfterDelay(time));
 		}
 
 		private IEnumerator DieAfterDelay(float delay)
 		{
 			yield return new WaitForSeconds(delay);
-			Debug.Log("456456456456");
 			Die();
 		}
 

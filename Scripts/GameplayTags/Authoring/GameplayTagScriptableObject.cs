@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-namespace GameplayTag.Authoring
+namespace GameplayTags.Authoring
 {
     [CreateAssetMenu(menuName = "Gameplay Ability System/Tag")]
     public class GameplayTagScriptableObject : ScriptableObject

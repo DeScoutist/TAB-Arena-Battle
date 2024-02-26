@@ -1,5 +1,5 @@
 using System;
-using AbilitySystem.ModifierMagnitude;
+using AbilitySystem.Authoring.ModifierMagnitude;
 using AttributeSystem.Authoring;
 using AttributeSystem.Components;
 

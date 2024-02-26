@@ -1,4 +1,4 @@
-namespace AbilitySystem.ModifierMagnitude
+namespace AbilitySystem.Authoring.ModifierMagnitude
 {
     public enum ECaptureAttributeFrom
     {

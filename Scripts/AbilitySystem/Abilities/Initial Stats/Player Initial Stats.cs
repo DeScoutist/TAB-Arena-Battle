@@ -1,5 +1,6 @@
 ﻿using System;
 using AbilitySystem.Authoring;
+using AbilitySystem.Components;
 using UnityEngine;
 
 namespace AbilitySystem.Abilities.Initial_Stats

@@ -1,11 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using AttributeSystem.Authoring;
 using AttributeSystem.Components;
 using UnityEngine;
-using UnityEngine.Events;
 
-namespace AbilitySystem.ModifierMagnitude
+namespace AbilitySystem.Authoring.ModifierMagnitude
 {
     [CreateAssetMenu(menuName = "Gameplay Ability System/Gameplay Effect/Modifier Magnitude/Attribute Backed")]
     public class AttributeBackedModifierMagnitude : ModifierMagnitudeScriptableObject

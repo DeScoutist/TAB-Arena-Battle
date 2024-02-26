@@ -1,4 +1,6 @@
 using System.Collections;
+using AbilitySystem.Components;
+using UnitSystem.UnitAI;
 using UnityEngine;
 
 namespace AbilitySystem.Authoring

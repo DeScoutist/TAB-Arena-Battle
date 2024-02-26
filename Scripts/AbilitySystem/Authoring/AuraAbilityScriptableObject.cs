@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq;
 using AbilitySystem.Abilities;
+using AbilitySystem.Components;
 using UnitSystem.UnitAI;
 using UnityEngine;
 

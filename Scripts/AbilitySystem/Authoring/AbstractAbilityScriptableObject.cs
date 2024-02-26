@@ -1,4 +1,5 @@
 using System;
+using AbilitySystem.Components;
 using UnityEngine;
 
 namespace AbilitySystem.Authoring
@@ -21,6 +22,11 @@ namespace AbilitySystem.Authoring
         /// </summary>
         [SerializeField] public float CastTime = 0f;
         
+        /// <summary>
+        /// Distance for Gameplay Effect to apply
+        /// </summary>
+        [SerializeField] public float Distance = 5f;
+
         /// <summary>
         /// The GameplayEffect that defines the cost associated with activating the ability
         /// </summary>

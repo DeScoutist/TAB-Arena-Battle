@@ -1,60 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
-using AbilitySystem;
+﻿using System.Collections.Generic;
+using AbilitySystem.Components;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DebuffSystem : MonoBehaviour
+namespace UI
 {
-	public GameObject DebuffIconPrefab; // Префаб иконки дебаффа
-	public Transform DebuffContainer; // Контейнер для иконок дебаффов
-	private AbilitySystemCharacter Character; // Ссылка на AbilitySystemCharacter
-
-	private List<GameObject> debuffIcons = new List<GameObject>(); // Список иконок дебаффов
-
-	private void Start()
+	public class DebuffSystem : MonoBehaviour
 	{
-		Character = this.transform.GetComponent<AbilitySystemCharacter>();
-	}
+		public GameObject DebuffIconPrefab; // Префаб иконки дебаффа
+		public Transform DebuffContainer; // Контейнер для иконок дебаффов
+		private AbilitySystemCharacter Character; // Ссылка на AbilitySystemCharacter
 
-	private void Update()
-	{
-		// Удаляем старые иконки
-		foreach (var icon in debuffIcons)
+		private List<GameObject> debuffIcons = new List<GameObject>(); // Список иконок дебаффов
+
+		private void Start()
 		{
-			Destroy(icon);
+			Character = this.transform.GetComponent<AbilitySystemCharacter>();
 		}
 
-		debuffIcons.Clear();
-
-		// Создаем новые иконки для каждого GameplayEffect
-		foreach (var gameplayEffect in Character.AppliedGameplayEffects)
+		private void Update()
 		{
-			if (gameplayEffect != null && gameplayEffect.spec != null && gameplayEffect.spec.GameplayEffect.Icon != null)
+			// Удаляем старые иконки
+			foreach (var icon in debuffIcons)
 			{
-				var debuffIcon = Instantiate(DebuffIconPrefab, DebuffContainer);
-				debuffIcons.Add(debuffIcon);
+				Destroy(icon);
+			}
 
-				// Здесь вы можете установить спрайт иконки в соответствии с GameplayEffect
-				debuffIcon.transform.Find("Timer").GetComponent<Image>().sprite = gameplayEffect.spec.GameplayEffect.Icon;
+			debuffIcons.Clear();
 
-				// Обновляем полоску времени действия и текст таймера
-				var timerImage = debuffIcon.transform.Find("Timer").GetComponent<Image>();
-				var timerText = debuffIcon.transform.Find("Timer/TimerText").GetComponent<TMP_Text>();
-				
-				if (timerImage != null && timerText != null)
+			// Создаем новые иконки для каждого GameplayEffect
+			foreach (var gameplayEffect in Character.AppliedGameplayEffects)
+			{
+				if (gameplayEffect != null && gameplayEffect.spec != null && gameplayEffect.spec.GameplayEffect.Icon != null)
 				{
-					timerImage.fillAmount = gameplayEffect.spec.DurationRemaining / gameplayEffect.spec.TotalDuration;
-					timerText.text = gameplayEffect.spec.DurationRemaining.ToString("F1");
+					var debuffIcon = Instantiate(DebuffIconPrefab, DebuffContainer);
+					debuffIcons.Add(debuffIcon);
 
-					if (gameplayEffect.spec.DurationRemaining > 3)
+					// Здесь вы можете установить спрайт иконки в соответствии с GameplayEffect
+					debuffIcon.transform.Find("Timer").GetComponent<Image>().sprite = gameplayEffect.spec.GameplayEffect.Icon;
+
+					// Обновляем полоску времени действия и текст таймера
+					var timerImage = debuffIcon.transform.Find("Timer").GetComponent<Image>();
+					var timerText = debuffIcon.transform.Find("Timer/TimerText").GetComponent<TMP_Text>();
+				
+					if (timerImage != null && timerText != null)
 					{
-						timerText.color = Color.white;
-					}
-					else
-					{
-						timerText.color = Color.red;
+						timerImage.fillAmount = gameplayEffect.spec.DurationRemaining / gameplayEffect.spec.TotalDuration;
+						timerText.text = gameplayEffect.spec.DurationRemaining.ToString("F1");
+
+						if (gameplayEffect.spec.DurationRemaining > 3)
+						{
+							timerText.color = Color.white;
+						}
+						else
+						{
+							timerText.color = Color.red;
+						}
 					}
 				}
 			}

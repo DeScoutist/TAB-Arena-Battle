@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using AbilitySystem.Authoring;
+using AbilitySystem.Components;
 using UnityEngine;
 
 namespace AbilitySystem.Abilities.Auras

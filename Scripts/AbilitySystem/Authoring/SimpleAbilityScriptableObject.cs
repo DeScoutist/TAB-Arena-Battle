@@ -1,4 +1,5 @@
 using System.Collections;
+using AbilitySystem.Components;
 using UnityEngine;
 
 namespace AbilitySystem.Authoring

@@ -1,6 +1,6 @@
 using System;
 using AbilitySystem.Authoring;
-using GameplayTag.Authoring;
+using GameplayTags.Authoring;
 
 namespace AbilitySystem
 {

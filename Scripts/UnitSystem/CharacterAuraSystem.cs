@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using AbilitySystem;
 using AbilitySystem.Authoring;
+using AbilitySystem.Components;
 using UnityEngine;
 
 // Ensure to include the namespace where AuraAbilityScriptableObject is defined
