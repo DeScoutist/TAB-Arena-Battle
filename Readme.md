@@ -1,5 +1,3 @@
-![image](https://github.com/DeScoutist/TAB-Arena-Battle/assets/150233239/ab093692-87c6-43f5-86ab-dbeaabe56757)# SpawnUnit System
-
 Система `SpawnUnit` привязана к `Canvas`. В нём указаны все префабы юнитов и нулевая координата.
 
 ## Unit (Prefab)
